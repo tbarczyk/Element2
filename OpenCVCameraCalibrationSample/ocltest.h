@@ -1,2 +1,3 @@
 void testOCL();
-cv::Mat testOCL2();
+void initOCL2();
+cv::Mat executeKernel(cv::Mat a);
