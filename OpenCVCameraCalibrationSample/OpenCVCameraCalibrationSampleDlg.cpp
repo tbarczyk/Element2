@@ -1047,7 +1047,7 @@ void COpenCVCameraCalibrationSampleDlg::OnBnClickedStreambutton()
 void COpenCVCameraCalibrationSampleDlg::OnBnClickedOclbtn()
 {
 	initOCL2();
-	cv::Mat mat_src = cv::imread("lena3.bmp", cv::IMREAD_GRAYSCALE);
+	cv::Mat mat_src = cv::imread("lena4.bmp", cv::IMREAD_GRAYSCALE);
 	cv::Mat result;
 	
 	result = executeKernel(mat_src);

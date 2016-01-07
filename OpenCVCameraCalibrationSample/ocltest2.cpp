@@ -3,9 +3,9 @@
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #define IMG_SIZE 512
-#define WIDTH 512
-#define HEIGHT 512
-#define IMAGE_NAME "lena3.bmp"
+#define WIDTH 997	
+#define HEIGHT 775
+#define IMAGE_NAME "lena4.bmp"
 //#include <boost/compute.hpp>
 //#include <boost/compute/interop/opencv/core.hpp>
 #include "opencv2/ocl/ocl.hpp"
@@ -199,11 +199,7 @@ cv::Mat executeKernel(cv::Mat mat_src)
 	err = clEnqueueReadImage(command_queue, image2, CL_TRUE, origin, region, 0, 0, output, 2, event, &event[2]);
 
 	// Print Output
-	float a = 0;
-	for (int i = 0; i<WIDTH; i++)
-		for (int j = 0; j<HEIGHT; ++j)
-			a = output[(i*WIDTH) + j];
-
+	
 	cl_mem image3;
 
 	image3 = clCreateImage2D(context, CL_MEM_READ_WRITE, &img_fmt, WIDTH, HEIGHT, 0, 0, &err);
