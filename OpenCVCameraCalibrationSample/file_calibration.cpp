@@ -472,6 +472,8 @@ calibrationResult FilesCalibration::StartFilesCalibration()
 			if (view.empty())
 				continue;
 			remap(view, rview, map1, map2, INTER_LINEAR);
+			cv::namedWindow("Image Undistorted View", 0);
+			cvResizeWindow("Image Undistorted View", 640, 480);
 			imshow("Image Undistorted View", rview);
 			for (int j = 0; j < objectPoints.size(); j = j + 2)
 			{
@@ -486,129 +488,130 @@ calibrationResult FilesCalibration::StartFilesCalibration()
 
 			cvtColor(view, grayView, CV_BGR2GRAY);
 
-			ocl::oclMat oclSrc = ocl::oclMat(grayView);
-			ocl::oclMat oclDst;
+			//ocl::oclMat oclSrc = ocl::oclMat(grayView);
+			//ocl::oclMat oclDst;
 
 			arrowedLine(view, lineImagePoints[0], lineImagePoints[1], Scalar(0, 0, 255), 5, 8, 0);//x red
 			arrowedLine(view, lineImagePoints[0], lineImagePoints[2], Scalar(0, 255, 0), 5, 8, 0);//y green
 			arrowedLine(view, lineImagePoints[0], lineImagePoints[3], Scalar(255, 0, 0), 5, 8, 0);//z blue
 
-			freopen("CONOUT$", "w", stdout);
-			cout << "aaaaaaaaaaaaaaaa";
+			//freopen("CONOUT$", "w", stdout);
+			//cout << "aaaaaaaaaaaaaaaa";
 
-			cv::ocl::DevicesInfo devInfo;
-			int res = cv::ocl::getOpenCLDevices(devInfo);
-			if (res == 0)
-			{
-				std::cerr << "There is no OPENCL Here !" << std::endl;
-			}
-			else
-			{
-				for (unsigned int i = 0; i < devInfo.size(); ++i)
-				{
-					std::cout << "Device : " << devInfo[i]->deviceName << " is present" << std::endl;
-				}
-			}
+			//cv::ocl::DevicesInfo devInfo;
+			//int res = cv::ocl::getOpenCLDevices(devInfo);
+			//if (res == 0)
+			//{
+			//	std::cerr << "There is no OPENCL Here !" << std::endl;
+			//}
+			//else
+			//{
+			//	for (unsigned int i = 0; i < devInfo.size(); ++i)
+			//	{
+			//		std::cout << "Device : " << devInfo[i]->deviceName << " is present" << std::endl;
+			//	}
+			//}
 
-			cv::ocl::setDevice(devInfo[0]);        // select device to use
-			std::cout << CV_VERSION_EPOCH << "." << CV_VERSION_MAJOR << "." << CV_VERSION_MINOR << std::endl;
+			//cv::ocl::setDevice(devInfo[0]);        // select device to use
+			//std::cout << CV_VERSION_EPOCH << "." << CV_VERSION_MAJOR << "." << CV_VERSION_MINOR << std::endl;
 
-			const char *KernelSource = "\n" \
-				"__kernel void negaposi_C1_D0(               \n" \
-				"   __global uchar* input,                   \n" \
-				"   __global uchar* output)                  \n" \
-				"{                                           \n" \
-				"   int i = get_global_id(0);                \n" \
-				"   output[i] = 255 - input[i];              \n" \
-				"}\n";
+			//const char *KernelSource = "\n" \
+			//	"__kernel void negaposi_C1_D0(               \n" \
+			//	"   __global uchar* input,                   \n" \
+			//	"   __global uchar* output)                  \n" \
+			//	"{                                           \n" \
+			//	"   int i = get_global_id(0);                \n" \
+			//	"   output[i] = 255 - input[i];              \n" \
+			//	"}\n";
 
-			cv::Mat mat_src = cv::imread("lena.jpg", cv::IMREAD_GRAYSCALE);
+			/*cv::Mat mat_src = cv::imread("lena.jpg", cv::IMREAD_GRAYSCALE);
 			cv::Mat mat_dst;
 			if (mat_src.empty())
 			{
 				std::cerr << "Failed to open image file." << std::endl;
-			}
-			unsigned int channels = mat_src.channels();
-			unsigned int depth = mat_src.depth();
+			}*/
+			//unsigned int channels = mat_src.channels();
+			//unsigned int depth = mat_src.depth();
 
-			cv::ocl::oclMat ocl_src(mat_src);
-			cv::ocl::oclMat ocl_dst(mat_src.size(), mat_src.type());
+			//cv::ocl::oclMat ocl_src(mat_src);
+			//cv::ocl::oclMat ocl_dst(mat_src.size(), mat_src.type());
 
-			cv::ocl::ProgramSource program("negaposi", KernelSource);
-			std::size_t globalThreads[3] = { ocl_src.rows * ocl_src.step, 1, 1 };
-			std::vector<std::pair<size_t, const void *> > args;
-			args.push_back(std::make_pair(sizeof(cl_mem), (void *)&ocl_src.data));
-			args.push_back(std::make_pair(sizeof(cl_mem), (void *)&ocl_dst.data));
-			cv::ocl::openCLExecuteKernelInterop(cv::ocl::Context::getContext(),
-				program, "negaposi", globalThreads, NULL, args, channels, depth, NULL);
-			ocl_dst.download(mat_dst);
+			//cv::ocl::ProgramSource program("negaposi", KernelSource);
+			//std::size_t globalThreads[3] = { ocl_src.rows * ocl_src.step, 1, 1 };
+			//std::vector<std::pair<size_t, const void *> > args;
+			//args.push_back(std::make_pair(sizeof(cl_mem), (void *)&ocl_src.data));
+			//args.push_back(std::make_pair(sizeof(cl_mem), (void *)&ocl_dst.data));
+			//cv::ocl::openCLExecuteKernelInterop(cv::ocl::Context::getContext(),
+			//	program, "negaposi", globalThreads, NULL, args, channels, depth, NULL);
+			//ocl_dst.download(mat_dst);
 
-			cv::namedWindow("mat_src");
-			cv::namedWindow("mat_dst");
-			cv::imshow("mat_src", mat_src);
-			cv::imshow("mat_dst", mat_dst);
+			//cv::namedWindow("mat_src");
+			cv::namedWindow("Calibration result",0);
+			cvResizeWindow("Calibration result", 640, 480);
+			cv::imshow("Calibration result", view);
+			//cv::imshow("mat_dst", mat_dst);
 			cv::waitKey(0);
-			cv::destroyAllWindows();
+			//cv::destroyAllWindows();
 
-			const clock_t begin_time2 = clock();
-			for (int i = 0; i < 1; i++)
-			{
-				threshold(grayView, grayView0, 200, 255, THRESH_BINARY);
-			}
-			float ocv = float(clock() - begin_time2) / CLOCKS_PER_SEC;
-
-			const clock_t begin_time = clock();
-			for (int i = 0; i < 1; i++)
-			{
-				cv::ocl::threshold(oclSrc, oclDst, 200, 255, THRESH_BINARY);
-			}
-			float ocl = float(clock() - begin_time) / CLOCKS_PER_SEC;
-			/*static const ocl::DeviceInfo devicesInfo = ocl::DeviceInfo();*/
-			ocl::PlatformsInfo platforms;
-			int platformCount = ocl::getOpenCLPlatforms(platforms);
-
-			ocl::DevicesInfo devices;
-			int devicesCount = ocl::getOpenCLDevices(devices);
-			ocl::oclMat afterErodeOcl;
-			Mat afterErodeOcv;
-			Mat kernel = getStructuringElement(MORPH_ELLIPSE, Size(31, 51));
-			ocl::oclMat kernelOCL = ocl::oclMat(kernel);
-			//auto B = new int[10][20];
-			//for (int i = 0; i<kernel.rows; i++){ 
-			//	uchar* rowi = kernel.ptr/*<uchar>*/(i);
-			//	for (int j = 0; j<kernel.cols; j++){
-			//		rowi[j] = rowi[j] * 255;
-			//	}
+			//const clock_t begin_time2 = clock();
+			//for (int i = 0; i < 1; i++)
+			//{
+			//	threshold(grayView, grayView0, 200, 255, THRESH_BINARY);
 			//}
-			try
-			{
-				const clock_t begin_time1 = clock();
-				ocl::erode(oclDst, afterErodeOcl, kernelOCL);
-				float oclerode = float(clock() - begin_time1) / CLOCKS_PER_SEC;
+			//float ocv = float(clock() - begin_time2) / CLOCKS_PER_SEC;
 
-				const clock_t begin_time2 = clock();
-				cv::erode(grayView0, afterErodeOcv, kernel);
-				float ocverode = float(clock() - begin_time2) / CLOCKS_PER_SEC;
+			//const clock_t begin_time = clock();
+			//for (int i = 0; i < 1; i++)
+			//{
+			//	cv::ocl::threshold(oclSrc, oclDst, 200, 255, THRESH_BINARY);
+			//}
+			//float ocl = float(clock() - begin_time) / CLOCKS_PER_SEC;
+			///*static const ocl::DeviceInfo devicesInfo = ocl::DeviceInfo();*/
+			//ocl::PlatformsInfo platforms;
+			//int platformCount = ocl::getOpenCLPlatforms(platforms);
 
-				//ocl::morphologyEx(oclDst, afterErodeOcl, 1, kernel);
-				//2058 2456
-				Mat dstFromOcl = Mat(oclDst);
-				Mat dsfAfterErodeOcl = Mat(afterErodeOcl);
+			//ocl::DevicesInfo devices;
+			//int devicesCount = ocl::getOpenCLDevices(devices);
+			//ocl::oclMat afterErodeOcl;
+			//Mat afterErodeOcv;
+			//Mat kernel = getStructuringElement(MORPH_ELLIPSE, Size(31, 51));
+			//ocl::oclMat kernelOCL = ocl::oclMat(kernel);
+			////auto B = new int[10][20];
+			////for (int i = 0; i<kernel.rows; i++){ 
+			////	uchar* rowi = kernel.ptr/*<uchar>*/(i);
+			////	for (int j = 0; j<kernel.cols; j++){
+			////		rowi[j] = rowi[j] * 255;
+			////	}
+			////}
+			//try
+			//{
+			//	const clock_t begin_time1 = clock();
+			//	ocl::erode(oclDst, afterErodeOcl, kernelOCL);
+			//	float oclerode = float(clock() - begin_time1) / CLOCKS_PER_SEC;
 
-				
-				const char* winName = "threshold";
-				namedWindow(winName, 0);
-				cvResizeWindow(winName, 800, 600);
-				namedWindow("erode", 0);
-				cvResizeWindow("erode", 800, 600);
-				imshow(winName, afterErodeOcv);
-				
-				imshow("erode", dsfAfterErodeOcl);
-			}
-			catch (cv::Exception & e)
-			{
-				cout << "oo" << endl;
-			}
+			//	const clock_t begin_time2 = clock();
+			//	cv::erode(grayView0, afterErodeOcv, kernel);
+			//	float ocverode = float(clock() - begin_time2) / CLOCKS_PER_SEC;
+
+			//	//ocl::morphologyEx(oclDst, afterErodeOcl, 1, kernel);
+			//	//2058 2456
+			//	Mat dstFromOcl = Mat(oclDst);
+			//	Mat dsfAfterErodeOcl = Mat(afterErodeOcl);
+
+			//	
+			//	const char* winName = "threshold";
+			//	namedWindow(winName, 0);
+			//	cvResizeWindow(winName, 800, 600);
+			//	namedWindow("erode", 0);
+			//	cvResizeWindow("erode", 800, 600);
+			//	imshow(winName, afterErodeOcv);
+			//	
+			//	imshow("erode", dsfAfterErodeOcl);
+			//}
+			//catch (cv::Exception & e)
+			//{
+			//	cout << "oo" << endl;
+			//}
 			char c = (char)waitKey();
 			if (c == ESC_KEY || c == 'q' || c == 'Q')
 				break;

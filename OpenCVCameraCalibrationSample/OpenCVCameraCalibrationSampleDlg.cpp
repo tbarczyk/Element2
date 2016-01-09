@@ -701,9 +701,9 @@ void COpenCVCameraCalibrationSampleDlg::EnableControls()
 	GetDlgItem(IDC_GAIN)->EnableWindow(m_bCameraOpen ? TRUE : FALSE);
 	GetDlgItem(IDC_SAVE_IMAGE_BUTTON)->EnableWindow(m_bCalibrated ? TRUE : FALSE);
 	GetDlgItem(IDC_SAVE_SETTINGS_BUTTON)->EnableWindow(m_bCalibrated ? TRUE : FALSE);
-	GetDlgItem(IDC_CHESS_ROWS_SPIN)->EnableWindow(m_bAcquisitionRunning ? FALSE : TRUE);
-	GetDlgItem(IDC_CHESS_COLS_SPIN)->EnableWindow(m_bAcquisitionRunning ? FALSE : TRUE);
-	GetDlgItem(IDC_IMAGE_COUNT_SPIN)->EnableWindow(m_bAcquisitionRunning ? FALSE : TRUE);
+//	GetDlgItem(IDC_CHESS_ROWS_SPIN)->EnableWindow(m_bAcquisitionRunning ? FALSE : TRUE);
+//	GetDlgItem(IDC_CHESS_COLS_SPIN)->EnableWindow(m_bAcquisitionRunning ? FALSE : TRUE);
+//	GetDlgItem(IDC_IMAGE_COUNT_SPIN)->EnableWindow(m_bAcquisitionRunning ? FALSE : TRUE);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -1009,6 +1009,7 @@ void COpenCVCameraCalibrationSampleDlg::OnBnClickedFilescalib()
 	using namespace cv;
 	calibrationResult res;
 	res = FilesCalibration::StartFilesCalibration();
+	GetDlgItem(PRESTART_BTN)->EnableWindow(res.ok?TRUE:FALSE);
 	/*Element el =  Element();
 	el.ComputeElement(res);*/
 	//CString cs;
