@@ -3,8 +3,8 @@
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #define IMG_SIZE 512
-#define WIDTH 997	
-#define HEIGHT 775
+#define WIDTH 512//997	
+#define HEIGHT 512//775 
 #define IMAGE_NAME "lena4.bmp"
 //#include <boost/compute.hpp>
 //#include <boost/compute/interop/opencv/core.hpp>
@@ -37,6 +37,8 @@ cl_event event[5];
 vector<cl_int2> getElement(int x, int y)
 {
 	cv::Mat elementMatrix = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(x, y));
+	//cv::namedWindow("struct_elem");
+	//cv::imshow("struct_elem", elementMatrix);
 	vector<cl_int2> elementVector;
 	unsigned char * matrix = (unsigned char*)(elementMatrix.data);
 	for (int i = 0; i < elementMatrix.cols; i++)
@@ -53,6 +55,15 @@ vector<cl_int2> getElement(int x, int y)
 	return elementVector;
 }
 
+/*
+TODO: powyżej rows columns zamienić i sprawdzić
+
+static float matData[WIDTH*HEIGHT];
+
+for (int i = 0; i < mat_src.rows; i++)
+	for (int j = 0; j < mat_src.cols; j++)
+		matData[i * mat_src.rows + j] = mat_src.at<unsigned char>(i, j);
+*/
 
 void err_check(int err, string err_code) {
 	if (err != CL_SUCCESS) {
@@ -128,8 +139,8 @@ void initOCL2() {
 	//cl_int2 elementData[] = { { 11, 12 }, { 21, 22 }, { 31, 32 }, { 41, 42 } };
 
 	//TODO: to nie moze byc tak, musi byc max X - min X i max Y - min Y zamiast na sztywno wstawionych wymiarow boxa elementu
-	int elX = 10;
-	int elY = 20;
+	int elX = 1;
+	int elY = 1;
 
 	vector<cl_int2> elementDataVector = getElement(elX,elY);
 	cl_int2* elementData = &elementDataVector[0];
@@ -200,19 +211,21 @@ cv::Mat executeKernel(cv::Mat mat_src)
 
 	// Print Output
 	
-	cl_mem image3;
+	//cl_mem image3;
 
-	image3 = clCreateImage2D(context, CL_MEM_READ_WRITE, &img_fmt, WIDTH, HEIGHT, 0, 0, &err);
+	//image3 = clCreateImage2D(context, CL_MEM_READ_WRITE, &img_fmt, WIDTH, HEIGHT, 0, 0, &err);
 
 	// copy Image1 to Image3
-	err = clEnqueueCopyImage(command_queue, image1, image3, origin, origin, region, 1, event, &event[3]);
+	//err = clEnqueueCopyImage(command_queue, image1, image3, origin, origin, region, 1, event, &event[3]);
 	err_check(err, "clEnqueueCopyImage");
 	uchar aaa[WIDTH * HEIGHT];
 	for (int i = 0; i < WIDTH * HEIGHT; i++)
 		aaa[i] = (uchar)output[i];
 
-	cv::Mat result = cv::Mat(WIDTH, HEIGHT, CV_8UC1, aaa);
+	cv::Mat result = cv::Mat(HEIGHT, WIDTH, CV_8UC1, aaa);
 	
+	cv::Mat result2 = cv::Mat(HEIGHT, WIDTH, CV_8UC1);
+	result.copyTo(result2);
 
 	// Step 12 : Release Objects
 
@@ -223,7 +236,8 @@ cv::Mat executeKernel(cv::Mat mat_src)
 	//clReleaseProgram(program);
 	//clReleaseCommandQueue(command_queue);//????????????????? comentowac czy nie
 	//clReleaseContext(context);
-	return result;
+	
+	return result2;
 }
 
 
