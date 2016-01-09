@@ -15,10 +15,6 @@ Mat getElement(int elHeight, calibrationResult calibData)
 
 	Mat el = Mat::zeros(bufX, bufY, CV_8UC1);
 	
-	cv::namedWindow("background", 0);
-	cvResizeWindow("background", 640, 480);
-	imshow("background", el);
-
 	vector<Point3d> objectPoints;
 	vector<Point2d> imagePoints;
 
