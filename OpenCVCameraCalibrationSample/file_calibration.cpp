@@ -452,10 +452,10 @@ calibrationResult FilesCalibration::StartFilesCalibration()
 			arrowedLine(view, lineImagePoints[0], lineImagePoints[1], Scalar(0, 0, 255), 5, 8, 0);//x red
 			arrowedLine(view, lineImagePoints[0], lineImagePoints[2], Scalar(0, 255, 0), 5, 8, 0);//y green
 			arrowedLine(view, lineImagePoints[0], lineImagePoints[3], Scalar(255, 0, 0), 5, 8, 0);//z blue
-
-			cv::namedWindow("Calibration result",0);
-			cvResizeWindow("Calibration result", 640, 480);
-			cv::imshow("Calibration result", view);
+			char* winName = "Calibration result - with SCENE coordinates system and two example PROJECTED elements";
+			cv::namedWindow(winName, 0);
+			cvResizeWindow(winName, 640, 480);
+			cv::imshow(winName, view);
 			
 			cv::waitKey(0);
 

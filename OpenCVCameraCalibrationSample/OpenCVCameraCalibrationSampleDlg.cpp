@@ -1,4 +1,4 @@
-// OpenCVCameraCalibrationSampleDlg.cpp : implementation file
+﻿// OpenCVCameraCalibrationSampleDlg.cpp : implementation file
 //
 
 #include "stdafx.h"
@@ -13,6 +13,7 @@
 #include <CL/cl.hpp>
 #include "ocltest.h"
 #include <opencv2/legacy/compat.hpp>
+#include "Element.h"
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -53,7 +54,7 @@ COpenCVCameraCalibrationSampleDlg::COpenCVCameraCalibrationSampleDlg(CWnd* pPare
 	m_AspectRatio = 1.f;
 	m_Flags = 0;
 	m_ImageCount = 10;
-
+	//calibResponse = calibrationResult();
 	m_pImg = NULL;
 
 	m_CameraMatrix = cvMat(3, 3, CV_64F, m_Camera);
@@ -286,6 +287,9 @@ void COpenCVCameraCalibrationSampleDlg::CloseFactoryAndCamera()
 		TRACE("Closed factory\n");
 	}
 }
+
+char * winCameraName = "Wieloprocesorowe Systemy Wizyjne - Camera Stream with adaptative erosion";
+
 //--------------------------------------------------------------------------------------------------
 // OnBnClickedStart
 //--------------------------------------------------------------------------------------------------
@@ -326,12 +330,13 @@ void COpenCVCameraCalibrationSampleDlg::OnBnClickedStart()
 	TRACE("Opening stream succeeded\n");
 
 	// Create two OpenCV named Windows used for displaying "Before" and "After" images
-	cvNamedWindow("Source", 0);
-	cvMoveWindow("Source", 0, 0);
-	//cvResizeWindow("Source", 512,384); 
-	cvNamedWindow("Output", 0);
-	cvMoveWindow("Output", 0, 400);
-	cvResizeWindow("Output", 512, 384);
+	
+	cvNamedWindow(winCameraName, 0);
+	//cvMoveWindow(winCameraName, 0, 0);
+	cvResizeWindow(winCameraName, 640, 480);
+	//cvNamedWindow("Output", 0);
+	//cvMoveWindow("Output", 0, 400);
+	//cvResizeWindow("Output", 512, 384);
 
 	int elem_size = m_BoardSize.width*m_BoardSize.height*sizeof(CvPoint2D32f);
 	if (m_pStorage == 0)
@@ -387,9 +392,12 @@ void COpenCVCameraCalibrationSampleDlg::StreamCBFunc(J_tIMAGE_INFO * pAqImageInf
 	//cv::ellipse(viewAfterConversion, imagePoints[1], cv::Size(50, 100), 30, 0, 360, cv::Scalar(100, 100, 100), -1, 8, 0);
 	cv::Mat oclSrc;
 	cv::threshold(viewAfterConversion, oclSrc, 150, 255, cv::THRESH_BINARY);
-	//cv::Mat result = testOCL2(oclSrc);
+
+	cv::Mat element = getElement(80, calibResponse);
+	//TODO: TUTAJ TRZEBA WYWOŁA EROZJĘ Z ELEMENTEM
+	//cv::Mat result = 
 	
-	cv::imshow("Source", oclSrc);
+	cv::imshow(winCameraName, oclSrc);
 
 	/*
 	int count = 0;
@@ -558,8 +566,8 @@ void COpenCVCameraCalibrationSampleDlg::OnBnClickedStop()
 		TRACE("Closed stream\n");
 	}
 
-	cvDestroyWindow("Source");
-	cvDestroyWindow("Output");
+	cvDestroyWindow(winCameraName);
+	//cvDestroyWindow("Output");
 	if (m_pImg != NULL)
 	{
 		cvReleaseImage(&m_pImg);
@@ -1003,13 +1011,15 @@ void COpenCVCameraCalibrationSampleDlg::OnDeltaposImageCountSpin(NMHDR *pNMHDR, 
 }
 
 
+
 void COpenCVCameraCalibrationSampleDlg::OnBnClickedFilescalib()
 {
 	using namespace std;
 	using namespace cv;
-	calibrationResult res;
-	res = FilesCalibration::StartFilesCalibration();
-	GetDlgItem(PRESTART_BTN)->EnableWindow(res.ok?TRUE:FALSE);
+	calibResponse = FilesCalibration::StartFilesCalibration();
+	GetDlgItem(PRESTART_BTN)->EnableWindow(calibResponse.ok ? TRUE : FALSE);
+	cv::Mat element = getElement(80, calibResponse);
+
 	/*Element el =  Element();
 	el.ComputeElement(res);*/
 	//CString cs;

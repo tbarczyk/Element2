@@ -2,52 +2,51 @@
 #include "Element.h"
 #define PI 3.1415
 
-
 using namespace std;
 using namespace cv;
 
-Element::Element()
+Mat getElement(int elHeight, calibrationResult calibData)
 {
-	/*angle = 0;
-	p1 = *(new Point2d(0,0));
-	p2 = *(new Point2d(0, 0));*/
-}
+	const int elX = 0;
+	const int elY = 0;
 
-void Element::ComputeElement(calibrationResult res)
-{
-	// these are real points in milimeters
+	const int bufX = 1000;
+	const int bufY = 1000;
+
+	Mat el = Mat::zeros(bufX, bufY, CV_8UC1);
+	
+	cv::namedWindow("background", 0);
+	cvResizeWindow("background", 640, 480);
+	imshow("background", el);
+
 	vector<Point3d> objectPoints;
 	vector<Point2d> imagePoints;
-	objectPoints.push_back(Point3d(0, 0, 0));
-	objectPoints.push_back(Point3d(0, 0, 60));
-	/*objectPoints.push_back(Point3d(60, 0, 0));
-	objectPoints.push_back(Point3d(0, 60, 0));
-	objectPoints.push_back(Point3d(0, 120, 60));
-	objectPoints.push_back(Point3d(120, 0, 60));*/
-	//objectPoints.push_back(Point3d(10000, 15000, 0));
-	//objectPoints.push_back(Point3d(0, 0, 0));
-	//objectPoints.push_back(Point3d(30, 30, 0));
-	//objectPoints.push_back(Point3d(0, 0, 1000));
-	//objectPoints.push_back(Point3d(500, 500, 0));
-	cv::projectPoints(Mat(objectPoints), res.rvecs[8], res.tvecs[8], res.cameraMatrix,
-		res.distCoeffs, imagePoints);
+
+	int lastImgIndex = calibData.distCoeffs.rows-1;
+
+	objectPoints.push_back(Point3d(elX,elY, 0));
+	objectPoints.push_back(Point3d(elX,elY, -elHeight));
 	
-	pair<double, double> elVector = make_pair(imagePoints[1].x - imagePoints[0].x, imagePoints[1].y - imagePoints[0].y);
-	double norm = sqrt(elVector.first*elVector.first + elVector.second*elVector.second);
-	double cos = elVector.first / norm;
-	double sin = elVector.second / norm;
-	//angle = (int)(acos(cos) * 180 / PI * (sin > 0 ? -1 : 1)*(sin == 0 ? 0 : 1) + 360) % 360;
-	//p1 = imagePoints[0];
-	//p2 = imagePoints[1];
-	//
-	////ellipse(view, Point(50, 50), Size(10, 30), 30, 0, 360, Scalar(0, 0, 0), -1, 8, 0);
-}
 
-void Element::GenerateElements(int width, int height)
-{
+	cv::projectPoints(Mat(objectPoints), calibData.rvecs[lastImgIndex], calibData.tvecs[lastImgIndex], calibData.cameraMatrix,
+		calibData.distCoeffs, imagePoints);
 
-}
+	pair<double, double> elVector;
+	double norm;
+	double cosinus;
+	double sinus;
+	int angle;
 
-Element::~Element()
-{
+	elVector = make_pair(imagePoints[1].x - imagePoints[0].x, imagePoints[1].y - imagePoints[0].y);
+	norm = sqrt(elVector.first*elVector.first + elVector.second*elVector.second);
+	cosinus = elVector.first / norm;
+	sinus = elVector.second / norm;
+	angle = (int)(acos(cosinus) * 180 / PI * (sinus > 0 ? -1 : 1)*(sinus == 0 ? 0 : 1) + 360) % 360;
+	ellipse(el, Point2d(bufX / 2, bufY/2), Size(norm *0.5, norm*0.5*0.5), angle, 0, 360, Scalar(255, 255, 255), -1, 8, 0);
+	
+	cv::namedWindow("Element projected", 0);
+	cvResizeWindow("Element projected", 640, 480);
+	imshow("Element projected", el);
+
+	return el;
 }

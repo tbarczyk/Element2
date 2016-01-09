@@ -69,10 +69,11 @@ IDR_MAINFRAME           ICON                    "res\\OpenCVCameraCalibrationSam
 // Dialog
 //
 
-IDD_OPENCVCAMERACALIBRATIONSAMPLE_DIALOG DIALOGEX 0, 0, 419, 346
+IDD_OPENCVCAMERACALIBRATIONSAMPLE_DIALOG DIALOGEX 0, 0, 563, 346
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_APPWINDOW
-CAPTION "Erosion with adaptative structuring element (openCV + openCL)"
+CAPTION 
+"Wieloprocesorowe Systemy Wizyjne - Erosion with adaptative structuring element (openCV + openCL)"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Camera ID",IDC_STATIC,7,3,278,52
@@ -109,17 +110,17 @@ BEGIN
     PUSHBUTTON      "Re-calibrate",IDC_CALIBRATE_BUTTON,11,261,106,16,WS_DISABLED
     PUSHBUTTON      "Save Settings",IDC_SAVE_SETTINGS_BUTTON,120,260,80,17,WS_DISABLED
     PUSHBUTTON      "Save Images",IDC_SAVE_IMAGE_BUTTON,202,260,80,17,WS_DISABLED
-    PUSHBUTTON      "Start stream with erosion",IDC_START,294,111,115,39,BS_MULTILINE
-    PUSHBUTTON      "Stop",IDC_STOP,295,153,114,35
+    PUSHBUTTON      "Start stream with erosion",IDC_START,376,111,115,39,BS_MULTILINE
+    PUSHBUTTON      "Stop",IDC_STOP,377,153,114,35
     PUSHBUTTON      "Exit",IDCANCEL,54,296,295,45
     GROUPBOX        "Calibration procedure",IDC_STATIC,7,119,279,48
     LTEXT           "Static",IDC_CALIB_PROCEDURE_STATIC,11,127,245,32
-    PUSHBUTTON      "Files Calibration",IDC_FILESCALIB,292,28,117,34
-    PUSHBUTTON      "Prepare Camera",PRESTART_BTN,293,69,116,37,WS_DISABLED
-    PUSHBUTTON      "Stream",StreamButton,296,242,113,24,WS_DISABLED
-    PUSHBUTTON      "OCL IMG TEST",OCLBTN,295,213,114,26
+    PUSHBUTTON      "Files Calibration",IDC_FILESCALIB,374,28,117,34
+    PUSHBUTTON      "Prepare Camera",PRESTART_BTN,375,69,116,37,WS_DISABLED
+    PUSHBUTTON      "Stream",StreamButton,378,242,113,24,WS_DISABLED
+    PUSHBUTTON      "OCL IMG TEST",OCLBTN,377,213,114,26
     GROUPBOX        "Acquision",IDC_STATIC,199,59,86,63
-    LTEXT           "Use buttons:",IDC_STATIC,329,12,42,8
+    LTEXT           "Use buttons:",IDC_STATIC,374,12,42,8
 END
 
 
@@ -172,13 +173,34 @@ GUIDELINES DESIGNINFO
 BEGIN
     IDD_OPENCVCAMERACALIBRATIONSAMPLE_DIALOG, DIALOG
     BEGIN
-        RIGHTMARGIN, 409
+        RIGHTMARGIN, 553
         BOTTOMMARGIN, 341
     END
 END
 #endif    // APSTUDIO_INVOKED
 
 #endif    // Japanese (Japan) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (United States) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+BEGIN
+    AFX_IDS_APP_TITLE       "Wieloprocesorowe Systemy Wizyjne"
+END
+
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

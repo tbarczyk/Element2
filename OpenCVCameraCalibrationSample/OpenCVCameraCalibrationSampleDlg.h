@@ -17,7 +17,7 @@
 #define NODE_NAME_GAIN          (int8_t*)"GainRaw"
 #define NODE_NAME_ACQSTART      (int8_t*)"AcquisitionStart"
 #define NODE_NAME_ACQSTOP       (int8_t*)"AcquisitionStop"
-
+#define AFX_IDS_APP_TITLE ""
 // CVCSample1Dlg dialog
 class COpenCVCameraCalibrationSampleDlg : public CDialog
 {
@@ -66,6 +66,7 @@ public:
     CvMemStorage*   m_pStorage;
     IplImage*       m_pUndistortMapX;
     IplImage*       m_pUndistortMapY;
+	struct calibrationResult calibResponse;
 
     BOOL OpenFactoryAndCamera();
     void CloseFactoryAndCamera();
