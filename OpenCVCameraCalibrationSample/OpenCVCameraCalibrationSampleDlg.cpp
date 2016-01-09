@@ -1058,18 +1058,22 @@ void COpenCVCameraCalibrationSampleDlg::OnBnClickedStreambutton()
 void COpenCVCameraCalibrationSampleDlg::OnBnClickedOclbtn()
 {
 	initOCL2();
-	cv::Mat mat_src = cv::imread("lena3.bmp", cv::IMREAD_GRAYSCALE);
-	cv::Mat result = cv::Mat(mat_src.rows, mat_src.cols, CV_8UC1);;
-	
-	//
+	cv::Mat mat_src = cv::imread("lena5.bmp", cv::IMREAD_GRAYSCALE);
+	cv::Mat result = cv::Mat(mat_src.rows, mat_src.cols, CV_8UC1);
 	result = executeKernel(mat_src);
 	
-	//
-
-	cv::namedWindow("res");
-	cv::imshow("res", result);
-	
-	result = executeKernel(mat_src);
 	cv::namedWindow("res1");
 	cv::imshow("res1", result);
+
+	mat_src = cv::imread("lena6.bmp", cv::IMREAD_GRAYSCALE);
+	result = executeKernel(mat_src);
+
+	cv::namedWindow("res2");
+	cv::imshow("res2", result);
+
+	mat_src = cv::imread("lena7.bmp", cv::IMREAD_GRAYSCALE);
+	result = executeKernel(mat_src);
+
+	cv::namedWindow("res3");
+	cv::imshow("res3", result);
 }
