@@ -1039,12 +1039,6 @@ void COpenCVCameraCalibrationSampleDlg::OnBnClickedBtn()
 }
 
 
-void COpenCVCameraCalibrationSampleDlg::OnBnClickedStreambutton()
-{
-	// TODO: Add your control notification handler code here
-}
-
-
 void COpenCVCameraCalibrationSampleDlg::OnBnClickedOclbtn()
 {
 	initOCL2();
@@ -1059,6 +1053,11 @@ void COpenCVCameraCalibrationSampleDlg::OnBnClickedOclbtn()
 	cv::namedWindow("res1");
 	cv::imshow("res1", result);
 
-
-
 }
+
+void COpenCVCameraCalibrationSampleDlg::OnBnClickedStreambutton()
+{
+	// TODO: Add your control notification handler code here
+}
+
+
