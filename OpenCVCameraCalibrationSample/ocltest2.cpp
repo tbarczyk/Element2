@@ -34,9 +34,9 @@ size_t region[] = { WIDTH, HEIGHT, 1 }; // Size of object to be transferred
 size_t GWSize[4];
 cl_event event[5];
 
-vector<cl_int2> getElement(int x, int y)
+vector<cl_int2> getElement(cv::Mat elementMatrix)
 {
-	cv::Mat elementMatrix = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(x, y));
+	//cv::Mat elementMatrix = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(x, y));
 	//cv::namedWindow("struct_elem");
 	//cv::imshow("struct_elem", elementMatrix);
 	vector<cl_int2> elementVector;
@@ -72,7 +72,7 @@ void err_check(int err, string err_code) {
 	}
 }
 
-void initOCL2() {
+void initOCL2(cv::Mat elMat) {
 
 	char* kernel_src_std =
 		"__kernel void image_copy(read_only image2d_t image, write_only image2d_t imageOut, int sizeOfElement, int2 elementDim, int imageWidth, int imageHeight, __global read_only int2* element)						 \n" \
@@ -125,7 +125,7 @@ void initOCL2() {
 	//  Create Image data formate
 	img_fmt.image_channel_order = CL_R;
 	img_fmt.image_channel_data_type = CL_FLOAT;
-
+	
 	// Step 6 : Create Image Memory Object
 
 	image1 = clCreateImage2D(context, CL_MEM_READ_ONLY, &img_fmt, WIDTH, HEIGHT, 0, 0, &err);
@@ -139,12 +139,12 @@ void initOCL2() {
 	//cl_int2 elementData[] = { { 11, 12 }, { 21, 22 }, { 31, 32 }, { 41, 42 } };
 
 	//TODO: to nie moze byc tak, musi byc max X - min X i max Y - min Y zamiast na sztywno wstawionych wymiarow boxa elementu
-	int elX = 10;
-	int elY = 20;
-
-	vector<cl_int2> elementDataVector = getElement(elX,elY);
+	int elX = elMat.cols;
+	int elY = elMat.rows;
+	
+	vector<cl_int2> elementDataVector = getElement(elMat);
 	cl_int2* elementData = &elementDataVector[0];
-	cl_int2 elementDimData = { elX, elY };
+	cl_int2 elementDimData = {elX , elY };
 	//int elementData[elX * elY * 2] = { 1, 2, 3, 4, 5, 6, 7, 20 };
 
 	cl_mem element = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, elementDimData.x * elementDimData.y * 2 * sizeof(int), elementData, &err);
