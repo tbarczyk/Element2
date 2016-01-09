@@ -1057,7 +1057,8 @@ void COpenCVCameraCalibrationSampleDlg::OnBnClickedStreambutton()
 
 void COpenCVCameraCalibrationSampleDlg::OnBnClickedOclbtn()
 {
-	initOCL2();
+	cv::Mat elementMatrix = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(10, 20));
+	initOCL2(elementMatrix);
 	cv::Mat mat_src = cv::imread("lena5.bmp", cv::IMREAD_GRAYSCALE);
 	cv::Mat result = cv::Mat(mat_src.rows, mat_src.cols, CV_8UC1);
 	result = executeKernel(mat_src);
