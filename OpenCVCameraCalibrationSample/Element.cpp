@@ -44,9 +44,16 @@ Mat getElement(int elHeight, calibrationResult calibData)
 	angle = (int)(acos(cosinus) * 180 / PI * (sinus > 0 ? -1 : 1)*(sinus == 0 ? 0 : 1) + 360) % 360;
 	ellipse(el, Point2d(bufX / 2, bufY/2), Size(norm *0.5, norm*0.5*0.5), angle, 0, 360, Scalar(255, 255, 255), -1, 8, 0);
 	
-	cv::namedWindow("Element projected", 0);
-	cvResizeWindow("Element projected", 640, 480);
-	imshow("Element projected", el);
 
-	return el;
+	Mat Points;
+	findNonZero(el, Points);
+	Rect Min_Rect = boundingRect(Points);
+	rectangle(el, Min_Rect.tl(), Min_Rect.br(), Scalar(0, 255, 0), 2);
+	cv::Mat croppedImage = el(Min_Rect);
+	
+	cv::namedWindow("Element projected");
+	//cvResizeWindow("Element projected", 640, 480);
+	imshow("Element projected", croppedImage);
+
+	return croppedImage;
 }

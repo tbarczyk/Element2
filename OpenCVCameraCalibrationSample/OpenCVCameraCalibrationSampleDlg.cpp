@@ -1018,7 +1018,7 @@ void COpenCVCameraCalibrationSampleDlg::OnBnClickedFilescalib()
 	using namespace cv;
 	calibResponse = FilesCalibration::StartFilesCalibration();
 	GetDlgItem(PRESTART_BTN)->EnableWindow(calibResponse.ok ? TRUE : FALSE);
-	cv::Mat element = getElement(80, calibResponse);
+	cv::Mat element = getElement(40, calibResponse);
 
 	/*Element el =  Element();
 	el.ComputeElement(res);*/
