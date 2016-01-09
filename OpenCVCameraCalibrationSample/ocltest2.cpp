@@ -3,8 +3,8 @@
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #define IMG_SIZE 512
-#define WIDTH 512//997	
-#define HEIGHT 512//775 
+#define WIDTH 823//512//997	
+#define HEIGHT 407//512//775 
 #define IMAGE_NAME "lena4.bmp"
 //#include <boost/compute.hpp>
 //#include <boost/compute/interop/opencv/core.hpp>
@@ -139,8 +139,8 @@ void initOCL2() {
 	//cl_int2 elementData[] = { { 11, 12 }, { 21, 22 }, { 31, 32 }, { 41, 42 } };
 
 	//TODO: to nie moze byc tak, musi byc max X - min X i max Y - min Y zamiast na sztywno wstawionych wymiarow boxa elementu
-	int elX = 1;
-	int elY = 1;
+	int elX = 10;
+	int elY = 20;
 
 	vector<cl_int2> elementDataVector = getElement(elX,elY);
 	cl_int2* elementData = &elementDataVector[0];
@@ -192,17 +192,23 @@ cv::Mat executeKernel(cv::Mat mat_src)
 
 	//cv::Mat mat_src = cv::imread(IMAGE_NAME, cv::IMREAD_GRAYSCALE);
 	static float matData[WIDTH*HEIGHT];
+	vector<float> helper;
+	for (int i = 0; i < mat_src.rows; ++i)
+		for (int j = 0; j < mat_src.cols; ++j)
+			helper.push_back(mat_src.at<unsigned char>(i, j));
+	
+	for (int i = 0; i < WIDTH*HEIGHT; i++)
+		matData[i] = helper[i];
 
-	for (int i = 0; i < mat_src.rows; i++)
-		for (int j = 0; j < mat_src.cols; j++)
-			matData[i * mat_src.rows + j] = mat_src.at<unsigned char>(i, j);
+	/*cv::Mat debug = cv::Mat(HEIGHT, WIDTH, CV_8UC1, matData);
+	cv::namedWindow("debug");
+	cv::imshow("debug", debug);*/
 
 	err = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&image1);
 	err_check(err, "Arg 1 : clSetKernelArg");
 
 	err = clEnqueueWriteImage(command_queue, image1, CL_TRUE, origin, region, 0, 0, matData, 0, NULL, &event[0]);
 	err_check(err, "clEnqueueWriteImage");
-
 
 	err = clEnqueueNDRangeKernel(command_queue, kernel, 2, NULL, GWSize, NULL, 1, event, &event[1]);
 	static float output[WIDTH*HEIGHT];
