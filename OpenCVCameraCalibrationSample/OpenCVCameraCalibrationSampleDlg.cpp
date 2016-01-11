@@ -393,7 +393,7 @@ void COpenCVCameraCalibrationSampleDlg::StreamCBFunc(J_tIMAGE_INFO * pAqImageInf
 	cv::Mat oclSrc;
 	cv::threshold(viewAfterConversion, oclSrc, 150, 255, cv::THRESH_BINARY);
 
-	cv::Mat element = getElement(80, calibResponse);
+	cv::Mat element = getElement(30, calibResponse,0,0);
 	//TODO: TUTAJ TRZEBA WYWOŁA EROZJĘ Z ELEMENTEM
 	//cv::Mat result = 
 	
@@ -1060,7 +1060,8 @@ void COpenCVCameraCalibrationSampleDlg::OnBnClickedStreambutton()
 void COpenCVCameraCalibrationSampleDlg::OnBnClickedOclbtn()
 {
 	//cv::Mat elementMatrix = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(10, 20));
-	initOCL2(getElement(20, calibResponse));
+	initOCL2(getElement(10, calibResponse,-30,90));
+
 	cv::Mat mat_src = cv::imread("lena5.bmp", cv::IMREAD_GRAYSCALE);
 	cv::Mat result = cv::Mat(mat_src.rows, mat_src.cols, CV_8UC1);
 	result = executeKernel(mat_src);

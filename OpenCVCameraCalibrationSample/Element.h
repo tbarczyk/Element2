@@ -4,4 +4,4 @@
 #endif
 
 
-cv::Mat getElement(int, calibrationResult);
+cv::Mat getElement(int, calibrationResult, int, int);

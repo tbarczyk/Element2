@@ -444,7 +444,7 @@ calibrationResult FilesCalibration::StartFilesCalibration()
 				cosinus = elVector.first / norm;
 				sinus = elVector.second / norm;
 				angle = (int)(acos(cosinus) * 180 / PI * (sinus > 0 ? -1 : 1)*(sinus == 0 ? 0 : 1) + 360) % 360;
-				ellipse(view, imagePointCenter[j], Size(norm *0.5, norm*0.5*0.5), angle, 0, 360, Scalar(0, 0, 0), -1, 8, 0);
+				//ellipse(view, imagePointCenter[j], Size(norm *0.5, norm*0.5*0.5), angle, 0, 360, Scalar(0, 0, 0), -1, 8, 0);
 			}
 
 			cvtColor(view, grayView, CV_BGR2GRAY);
