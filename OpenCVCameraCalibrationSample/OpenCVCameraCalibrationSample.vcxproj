@@ -206,6 +206,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX64</TargetMachine>
+      <StackReserveSize>12800000</StackReserveSize>
     </Link>
     <PostBuildEvent>
       <Message>Embed manifest to request administrator execution level for Vista</Message>
@@ -263,6 +264,7 @@
     <ClCompile Include="structural_element.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="config.h" />
     <ClInclude Include="Element.h" />
     <ClInclude Include="file_calibration.h" />
     <ClInclude Include="ocltest.h" />

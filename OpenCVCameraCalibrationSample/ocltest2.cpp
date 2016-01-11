@@ -1,11 +1,9 @@
 ﻿#include "stdafx.h"
+#include "config.h"
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#define IMG_SIZE 512
-#define WIDTH 823//512//997	
-#define HEIGHT 407//512//775 
-#define IMAGE_NAME "lena4.bmp"
+
 //#include <boost/compute.hpp>
 //#include <boost/compute/interop/opencv/core.hpp>
 #include "opencv2/ocl/ocl.hpp"
@@ -188,53 +186,52 @@ void initOCL2(cv::Mat elMat) {
 
 cv::Mat executeKernel(cv::Mat mat_src)
 {
-	// Step 10 : Execute Kernel 
-
-	//cv::Mat mat_src = cv::imread(IMAGE_NAME, cv::IMREAD_GRAYSCALE);
+	float c = clock();
+	float cAll = clock();
+	float t = float(clock() - c) / CLOCKS_PER_SEC;
+	c = clock();
 	static float matData[WIDTH*HEIGHT];
 	vector<float> helper;
 	for (int i = 0; i < mat_src.rows; ++i)
 		for (int j = 0; j < mat_src.cols; ++j)
 			helper.push_back(mat_src.at<unsigned char>(i, j));
-	
+	t = float(clock() - c) / CLOCKS_PER_SEC;
+	c = clock();
 	for (int i = 0; i < WIDTH*HEIGHT; i++)
 		matData[i] = helper[i];
 
-	/*cv::Mat debug = cv::Mat(HEIGHT, WIDTH, CV_8UC1, matData);
-	cv::namedWindow("debug");
-	cv::imshow("debug", debug);*/
+	
 
+	t = float(clock() - c) / CLOCKS_PER_SEC;
+	c = clock();
 	err = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&image1);
+	
 	err_check(err, "Arg 1 : clSetKernelArg");
-
+	t = float(clock() - c) / CLOCKS_PER_SEC;
+	c = clock();
 	err = clEnqueueWriteImage(command_queue, image1, CL_TRUE, origin, region, 0, 0, matData, 0, NULL, &event[0]);
 	err_check(err, "clEnqueueWriteImage");
-
+	t = float(clock() - c) / CLOCKS_PER_SEC;
+	c = clock();
 	err = clEnqueueNDRangeKernel(command_queue, kernel, 2, NULL, GWSize, NULL, 1, event, &event[1]);
 	static float output[WIDTH*HEIGHT];
-	// Step 11 : Read output Data, from Device to Host
+	t = float(clock() - c) / CLOCKS_PER_SEC;
+	c = clock();
 	err = clEnqueueReadImage(command_queue, image2, CL_TRUE, origin, region, 0, 0, output, 2, event, &event[2]);
-
-	// Print Output
 	
-	//cl_mem image3;
-
-	//image3 = clCreateImage2D(context, CL_MEM_READ_WRITE, &img_fmt, WIDTH, HEIGHT, 0, 0, &err);
-
-	// copy Image1 to Image3
-	//err = clEnqueueCopyImage(command_queue, image1, image3, origin, origin, region, 1, event, &event[3]);
 	err_check(err, "clEnqueueCopyImage");
+	t = float(clock() - c) / CLOCKS_PER_SEC;
+	c = clock();
 	uchar aaa[WIDTH * HEIGHT];
 	for (int i = 0; i < WIDTH * HEIGHT; i++)
 		aaa[i] = (uchar)output[i];
-
 	cv::Mat result = cv::Mat(HEIGHT, WIDTH, CV_8UC1, aaa);
-	
+	t = float(clock() - c) / CLOCKS_PER_SEC;
+	c = clock();
 	cv::Mat result2 = cv::Mat(HEIGHT, WIDTH, CV_8UC1);
 	result.copyTo(result2);
-
-	// Step 12 : Release Objects
-
+	t = float(clock() - c) / CLOCKS_PER_SEC;
+	c = clock();
 	//clReleaseMemObject(image3);
 	//clReleaseMemObject(image1);
 	//clReleaseMemObject(image2);
@@ -242,7 +239,7 @@ cv::Mat executeKernel(cv::Mat mat_src)
 	//clReleaseProgram(program);
 	//clReleaseCommandQueue(command_queue);//????????????????? comentowac czy nie
 	//clReleaseContext(context);
-	
+	float tAll = float(clock() - cAll) / CLOCKS_PER_SEC;
 	return result2;
 }
 

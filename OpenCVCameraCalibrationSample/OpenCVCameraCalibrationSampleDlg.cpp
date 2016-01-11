@@ -8,6 +8,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include "config.h"
 #include "opencv2/ocl/ocl.hpp"
 #pragma comment (lib,"OpenCL.lib") 
 #include <CL/cl.hpp>
@@ -332,8 +333,10 @@ void COpenCVCameraCalibrationSampleDlg::OnBnClickedStart()
 	// Create two OpenCV named Windows used for displaying "Before" and "After" images
 	
 	cvNamedWindow(winCameraName, 0);
+	cvNamedWindow("bin", 0);
 	//cvMoveWindow(winCameraName, 0, 0);
 	cvResizeWindow(winCameraName, 640, 480);
+	cvResizeWindow("bin", 640, 480);
 	//cvNamedWindow("Output", 0);
 	//cvMoveWindow("Output", 0, 400);
 	//cvResizeWindow("Output", 512, 384);
@@ -386,19 +389,21 @@ void COpenCVCameraCalibrationSampleDlg::StreamCBFunc(J_tIMAGE_INFO * pAqImageInf
 	memcpy(m_pImg->imageData, pAqImageInfo->pImageBuffer, m_pImg->imageSize);
 	
 	cv::Mat viewAfterConversion;
+	cv::Mat viewAfterConversion2;
 	cv::Mat image(m_pImg);
 	cv::cvtColor(image, viewAfterConversion, CV_BayerRG2GRAY);
 	//cv::ellipse(viewAfterConversion, imagePoints[0], cv::Size(50, 100), 0, 0, 360, cv::Scalar(100, 100, 100), -1, 8, 0);
 	//cv::ellipse(viewAfterConversion, imagePoints[1], cv::Size(50, 100), 30, 0, 360, cv::Scalar(100, 100, 100), -1, 8, 0);
 	cv::Mat oclSrc;
-	cv::threshold(viewAfterConversion, oclSrc, 150, 255, cv::THRESH_BINARY);
+	cv::threshold(viewAfterConversion, oclSrc, 80, 255, cv::THRESH_BINARY);
 
-	cv::Mat element = getElement(30, calibResponse,0,0);
-	//TODO: TUTAJ TRZEBA WYWOŁA EROZJĘ Z ELEMENTEM
-	//cv::Mat result = 
+	cv::bitwise_not(oclSrc, viewAfterConversion2);
 	
-	cv::imshow(winCameraName, oclSrc);
-
+	cv::Mat result = cv::Mat(viewAfterConversion2.rows, viewAfterConversion2.cols, CV_8UC1);
+	result = executeKernel(viewAfterConversion2);
+	cv::imshow(winCameraName, result);
+	cv::imshow("bin", viewAfterConversion2);
+	
 	/*
 	int count = 0;
 	int found = 0;
@@ -689,9 +694,9 @@ void COpenCVCameraCalibrationSampleDlg::InitializeControls()
 	CString calibProcedure = _T("The camera calibration process will automatically start when the image acquisition is started and a Chess Board pattern with the specified black and white rectangular squares is put in front of the camera. After the specified number of sample images have been captured then the calibration is performed and the results are displayed.\nDuring the calibration process all the Chess Board inner corners will be marked whenever they are detected.");
 	SetDlgItemText(IDC_CALIB_PROCEDURE_STATIC, calibProcedure);
 
-	((CSpinButtonCtrl*)GetDlgItem(IDC_CHESS_ROWS_SPIN))->SetPos(m_BoardSize.width + 1);
-	((CSpinButtonCtrl*)GetDlgItem(IDC_CHESS_COLS_SPIN))->SetPos(m_BoardSize.height + 1);
-	((CSpinButtonCtrl*)GetDlgItem(IDC_IMAGE_COUNT_SPIN))->SetPos(m_ImageCount);
+//	((CSpinButtonCtrl*)GetDlgItem(IDC_CHESS_ROWS_SPIN))->SetPos(m_BoardSize.width + 1);
+//	((CSpinButtonCtrl*)GetDlgItem(IDC_CHESS_COLS_SPIN))->SetPos(m_BoardSize.height + 1);
+//	((CSpinButtonCtrl*)GetDlgItem(IDC_IMAGE_COUNT_SPIN))->SetPos(m_ImageCount);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -1012,25 +1017,6 @@ void COpenCVCameraCalibrationSampleDlg::OnDeltaposImageCountSpin(NMHDR *pNMHDR, 
 
 
 
-void COpenCVCameraCalibrationSampleDlg::OnBnClickedFilescalib()
-{
-	using namespace std;
-	using namespace cv;
-	calibResponse = FilesCalibration::StartFilesCalibration();
-	GetDlgItem(PRESTART_BTN)->EnableWindow(calibResponse.ok ? TRUE : FALSE);
-	GetDlgItem(OCLBTN)->EnableWindow(calibResponse.ok ? TRUE : FALSE);
-	
-	//cv::Mat element = getElement(40, calibResponse);
-
-	/*Element el =  Element();
-	el.ComputeElement(res);*/
-	//CString cs;
-	//cs = res.c_str();
-	//if (res != "") AfxMessageBox(cs, MB_OK | MB_ICONEXCLAMATION);
-}
-
-
-
 void COpenCVCameraCalibrationSampleDlg::OnBnClickedBtn()
 {
 	BOOL retval1;
@@ -1057,27 +1043,49 @@ void COpenCVCameraCalibrationSampleDlg::OnBnClickedStreambutton()
 }
 
 
+void COpenCVCameraCalibrationSampleDlg::OnBnClickedFilescalib()
+{
+	using namespace std;
+	using namespace cv;
+	calibResponse = FilesCalibration::StartFilesCalibration();
+	GetDlgItem(PRESTART_BTN)->EnableWindow(calibResponse.ok ? TRUE : FALSE);
+	GetDlgItem(OCLBTN)->EnableWindow(calibResponse.ok ? TRUE : FALSE);
+	
+	initOCL2(getElement(10, calibResponse, -30, 90));
+
+	//cv::Mat element = getElement(40, calibResponse);
+
+	/*Element el =  Element();
+	el.ComputeElement(res);*/
+	//CString cs;
+	//cs = res.c_str();
+	//if (res != "") AfxMessageBox(cs, MB_OK | MB_ICONEXCLAMATION);
+}
+
+
+
 void COpenCVCameraCalibrationSampleDlg::OnBnClickedOclbtn()
 {
 	//cv::Mat elementMatrix = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(10, 20));
-	initOCL2(getElement(10, calibResponse,-30,90));
-
-	cv::Mat mat_src = cv::imread("lena5.bmp", cv::IMREAD_GRAYSCALE);
-	cv::Mat result = cv::Mat(mat_src.rows, mat_src.cols, CV_8UC1);
+	
+	cv::Mat mat_src = cv::imread(IMAGE_NAME, cv::IMREAD_GRAYSCALE);
+	cv::Mat result = cv::Mat(mat_src.rows, mat_src.cols, CV_8UC1); 
+	float c = clock();
 	result = executeKernel(mat_src);
 	
+	float t = float(clock() - c) / CLOCKS_PER_SEC;
 	cv::namedWindow("res1");
 	cv::imshow("res1", result);
 
-	mat_src = cv::imread("lena6.bmp", cv::IMREAD_GRAYSCALE);
-	result = executeKernel(mat_src);
+	/*mat_src = cv::imread("lena6.bmp", cv::IMREAD_GRAYSCALE);
+	result = executeKernel(mat_src);*/
 
-	cv::namedWindow("res2");
+	/*cv::namedWindow("res2");
 	cv::imshow("res2", result);
 
 	mat_src = cv::imread("lena7.bmp", cv::IMREAD_GRAYSCALE);
 	result = executeKernel(mat_src);
 
 	cv::namedWindow("res3");
-	cv::imshow("res3", result);
+	cv::imshow("res3", result);*/
 }

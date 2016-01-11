@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "Element.h"
 #define PI 3.1415
 
@@ -35,8 +35,8 @@ Mat getElement(int elHeight, calibrationResult calibData, int elX, int elY)
 	cosinus = elVector.second / norm;
 	sinus = elVector.first / norm;
 	angle = (int)(acos(cosinus) * 180 / PI * (sinus > 0 ? -1 : 1)*(sinus == 0 ? 0 : 1) + 360) % 360;
-	ellipse(el, Point2d(bufX / 2, bufY/2), Size(norm *0.5, norm), angle, 0, 360, Scalar(255, 255, 255), -1, 8, 0);
-	
+	ellipse(el, Point2d(bufX / 2, bufY/2), Size(norm *0.5*0.5, norm*0.5), angle, 0, 360, Scalar(255, 255, 255), -1, 8, 0);
+	//mnożone razy 0.5 i 0.5 x i y elipsy bo tak sie definiuje w openCV jej wymiary :)
 
 	Mat Points;
 	findNonZero(el, Points);
