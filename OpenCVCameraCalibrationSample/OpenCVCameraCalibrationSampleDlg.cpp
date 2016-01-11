@@ -1070,13 +1070,19 @@ void COpenCVCameraCalibrationSampleDlg::OnBnClickedOclbtn()
 	
 	cv::Mat mat_src = cv::imread(IMAGE_NAME, cv::IMREAD_GRAYSCALE);
 	cv::Mat result = cv::Mat(mat_src.rows, mat_src.cols, CV_8UC1); 
+	cv::Mat resultOCV = cv::Mat(mat_src.rows, mat_src.cols, CV_8UC1);
 	float c = clock();
 	result = executeKernel(mat_src);
 	
 	float t = float(clock() - c) / CLOCKS_PER_SEC;
 	cv::namedWindow("res1");
 	cv::imshow("res1", result);
-
+	cv::Mat el = getElement(10, calibResponse, -30, 90);
+	c = clock();
+	cv::erode(mat_src, resultOCV, el);
+	t = float(clock() - c) / CLOCKS_PER_SEC;
+	cv::namedWindow("resOCV");
+	cv::imshow("resOCV", resultOCV);
 	/*mat_src = cv::imread("lena6.bmp", cv::IMREAD_GRAYSCALE);
 	result = executeKernel(mat_src);*/
 

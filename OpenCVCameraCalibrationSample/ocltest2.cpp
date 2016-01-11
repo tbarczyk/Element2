@@ -81,11 +81,11 @@ void initOCL2(cv::Mat elMat) {
 		"}																			\n" \
 		"const sampler_t sampler =													\n" \
 		"	CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP | CLK_FILTER_NEAREST;	\n" \
-		"float4 ans = { 255, 255, 255, 255 };										\n" \
+		"uint4 ans = { 255, 255, 255, 255 };										\n" \
 		"for (int i = 0; i < sizeOfElement; ++i) {									\n" \
 		"	const int2 elementCoords = element[i];									\n" \
 		"	const int2 imageCoords = coords + elementCoords - (elementDim >> 1);	\n" \
-		"	const float4 imagePixel = read_imagef(image, sampler, imageCoords);		\n" \
+		"	const uint4 imagePixel = read_imageui(image, sampler, imageCoords);		\n" \
 		"	if (imagePixel.x < 255) {												\n" \
 		"		ans.x = 0;															\n" \
 		"		ans.y = 0;															\n" \
@@ -94,7 +94,7 @@ void initOCL2(cv::Mat elMat) {
 		"		break;																\n" \
 		"	}																		\n" \
 		"}																			\n" \
-		"write_imagef(imageOut, coords, ans);	};									\n";
+		"write_imageui(imageOut, coords, ans);	};									\n";
 	
 	
 	// step 1 : getting platform ID
@@ -122,7 +122,7 @@ void initOCL2(cv::Mat elMat) {
 
 	//  Create Image data formate
 	img_fmt.image_channel_order = CL_R;
-	img_fmt.image_channel_data_type = CL_FLOAT;
+	img_fmt.image_channel_data_type = CL_UNSIGNED_INT32;
 	
 	// Step 6 : Create Image Memory Object
 
@@ -190,20 +190,14 @@ cv::Mat executeKernel(cv::Mat mat_src)
 	float cAll = clock();
 	float t = float(clock() - c) / CLOCKS_PER_SEC;
 	c = clock();
-	static float matData[WIDTH*HEIGHT];
-	vector<float> helper;
-	for (int i = 0; i < mat_src.rows; ++i)
-		for (int j = 0; j < mat_src.cols; ++j)
-			helper.push_back(mat_src.at<unsigned char>(i, j));
-	t = float(clock() - c) / CLOCKS_PER_SEC;
-	c = clock();
+	static unsigned int matData[WIDTH*HEIGHT];
+
 	for (int i = 0; i < WIDTH*HEIGHT; i++)
-		matData[i] = helper[i];
-
-	
+		matData[i] = mat_src.data[i];
 
 	t = float(clock() - c) / CLOCKS_PER_SEC;
 	c = clock();
+	
 	err = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&image1);
 	
 	err_check(err, "Arg 1 : clSetKernelArg");
@@ -214,7 +208,7 @@ cv::Mat executeKernel(cv::Mat mat_src)
 	t = float(clock() - c) / CLOCKS_PER_SEC;
 	c = clock();
 	err = clEnqueueNDRangeKernel(command_queue, kernel, 2, NULL, GWSize, NULL, 1, event, &event[1]);
-	static float output[WIDTH*HEIGHT];
+	static unsigned int output[WIDTH*HEIGHT];
 	t = float(clock() - c) / CLOCKS_PER_SEC;
 	c = clock();
 	err = clEnqueueReadImage(command_queue, image2, CL_TRUE, origin, region, 0, 0, output, 2, event, &event[2]);
@@ -222,16 +216,17 @@ cv::Mat executeKernel(cv::Mat mat_src)
 	err_check(err, "clEnqueueCopyImage");
 	t = float(clock() - c) / CLOCKS_PER_SEC;
 	c = clock();
+	
 	uchar aaa[WIDTH * HEIGHT];
 	for (int i = 0; i < WIDTH * HEIGHT; i++)
 		aaa[i] = (uchar)output[i];
+
 	cv::Mat result = cv::Mat(HEIGHT, WIDTH, CV_8UC1, aaa);
 	t = float(clock() - c) / CLOCKS_PER_SEC;
 	c = clock();
 	cv::Mat result2 = cv::Mat(HEIGHT, WIDTH, CV_8UC1);
 	result.copyTo(result2);
-	t = float(clock() - c) / CLOCKS_PER_SEC;
-	c = clock();
+	
 	//clReleaseMemObject(image3);
 	//clReleaseMemObject(image1);
 	//clReleaseMemObject(image2);

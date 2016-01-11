@@ -206,7 +206,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX64</TargetMachine>
-      <StackReserveSize>12800000</StackReserveSize>
+      <StackReserveSize>128000000</StackReserveSize>
     </Link>
     <PostBuildEvent>
       <Message>Embed manifest to request administrator execution level for Vista</Message>
