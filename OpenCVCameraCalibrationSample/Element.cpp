@@ -43,12 +43,13 @@ Mat getElement(int elHeight, calibrationResult calibData, int elX, int elY)
 	Rect Min_Rect = boundingRect(Points);
 	rectangle(el, Min_Rect.tl(), Min_Rect.br(), Scalar(0, 255, 0), 2);
 	cv::Mat croppedImage = el(Min_Rect);
-	stringstream aaa;
-	aaa << elX;
-	string a = aaa.str();
-	cv::namedWindow(a);
-	//cvResizeWindow("Element projected", 640, 480);
-	imshow(a, croppedImage);
+	//stringstream aaa;
+	//aaa << elX;
+	//string a = aaa.str();
+	cv::namedWindow("Adaptative structuring element",0);
+	cv::moveWindow("Adaptative structuring element", 300, 300);
+	//cv::resizeWindow("Adaptative structuring element", 640, 480);
+	imshow("Adaptative structuring element", croppedImage);
 
 	return croppedImage;
 }

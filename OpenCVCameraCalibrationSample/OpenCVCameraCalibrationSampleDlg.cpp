@@ -1051,7 +1051,7 @@ void COpenCVCameraCalibrationSampleDlg::OnBnClickedFilescalib()
 	GetDlgItem(PRESTART_BTN)->EnableWindow(calibResponse.ok ? TRUE : FALSE);
 	GetDlgItem(OCLBTN)->EnableWindow(calibResponse.ok ? TRUE : FALSE);
 	
-	initOCL2(getElement(10, calibResponse, -30, 90));
+	initOCL(getElement(10, calibResponse, -30, 90));
 
 	//cv::Mat element = getElement(40, calibResponse);
 

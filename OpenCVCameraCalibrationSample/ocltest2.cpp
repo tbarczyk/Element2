@@ -50,6 +50,7 @@ vector<cl_int2> getElement(cv::Mat elementMatrix)
 			}
 		}
 	}
+	random_shuffle(elementVector.begin(), elementVector.end());
 	return elementVector;
 }
 
@@ -70,7 +71,7 @@ void err_check(int err, string err_code) {
 	}
 }
 
-void initOCL2(cv::Mat elMat) {
+void initOCL(cv::Mat elMat) {
 
 	char* kernel_src_std =
 		"__kernel void image_copy(read_only image2d_t image, write_only image2d_t imageOut, int sizeOfElement, int2 elementDim, int imageWidth, int imageHeight, __global read_only int2* element)						 \n" \
