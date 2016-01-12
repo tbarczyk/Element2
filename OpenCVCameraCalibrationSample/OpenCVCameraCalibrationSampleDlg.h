@@ -57,6 +57,11 @@ public:
     float           m_AspectRatio;
     int             m_Flags;
     int             m_CaptureDelay;
+	
+	int image_width;
+	int image_height;
+
+
     bool            m_bSaveImages;
     bool            m_bImagesSaved;
     bool            m_bSaveSettings;

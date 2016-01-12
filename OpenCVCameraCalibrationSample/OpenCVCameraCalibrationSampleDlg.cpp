@@ -64,6 +64,9 @@ COpenCVCameraCalibrationSampleDlg::COpenCVCameraCalibrationSampleDlg(CWnd* pPare
 	m_pReprojErrsMatrix = 0;
 	m_AvgReprojRrr = 0;
 
+	image_width = WIDTH;
+	image_height = HEIGHT;
+
 	m_bCalibrated = false;
 	m_bCalibratedChanged = false;
 	m_CaptureDelay = 0;
@@ -712,8 +715,8 @@ void COpenCVCameraCalibrationSampleDlg::EnableControls()
 	GetDlgItem(IDC_HEIGHT)->EnableWindow(m_bCameraOpen ? (m_bAcquisitionRunning ? FALSE : TRUE) : FALSE);
 	GetDlgItem(IDC_SLIDER_GAIN)->EnableWindow(m_bCameraOpen ? TRUE : FALSE);
 	GetDlgItem(IDC_GAIN)->EnableWindow(m_bCameraOpen ? TRUE : FALSE);
-	GetDlgItem(IDC_SAVE_IMAGE_BUTTON)->EnableWindow(m_bCalibrated ? TRUE : FALSE);
-	GetDlgItem(IDC_SAVE_SETTINGS_BUTTON)->EnableWindow(m_bCalibrated ? TRUE : FALSE);
+//	GetDlgItem(IDC_SAVE_IMAGE_BUTTON)->EnableWindow(m_bCalibrated ? TRUE : FALSE);
+//	GetDlgItem(IDC_SAVE_SETTINGS_BUTTON)->EnableWindow(m_bCalibrated ? TRUE : FALSE);
 //	GetDlgItem(IDC_CHESS_ROWS_SPIN)->EnableWindow(m_bAcquisitionRunning ? FALSE : TRUE);
 //	GetDlgItem(IDC_CHESS_COLS_SPIN)->EnableWindow(m_bAcquisitionRunning ? FALSE : TRUE);
 //	GetDlgItem(IDC_IMAGE_COUNT_SPIN)->EnableWindow(m_bAcquisitionRunning ? FALSE : TRUE);
@@ -743,6 +746,8 @@ void COpenCVCameraCalibrationSampleDlg::OnHScroll(UINT nSBCode, UINT nPos, CScro
 		retval = J_Camera_SetValueInt64(m_hCam, NODE_NAME_WIDTH, int64Val);
 
 		SetDlgItemInt(IDC_WIDTH, iPos);
+
+		image_width = iPos;
 	}
 
 	//- Height -----------------------------------------------
@@ -758,6 +763,8 @@ void COpenCVCameraCalibrationSampleDlg::OnHScroll(UINT nSBCode, UINT nPos, CScro
 		retval = J_Camera_SetValueInt64(m_hCam, NODE_NAME_HEIGHT, int64Val);
 
 		SetDlgItemInt(IDC_HEIGHT, iPos);
+
+		image_height = iPos;
 	}
 
 	//- Gain -----------------------------------------------
@@ -1050,7 +1057,7 @@ void COpenCVCameraCalibrationSampleDlg::OnBnClickedFilescalib()
 	calibResponse = FilesCalibration::StartFilesCalibration();
 	GetDlgItem(PRESTART_BTN)->EnableWindow(calibResponse.ok ? TRUE : FALSE);
 	GetDlgItem(OCLBTN)->EnableWindow(calibResponse.ok ? TRUE : FALSE);
-	
+
 	initOCL(getElement(10, calibResponse, -30, 90));
 
 	//cv::Mat element = getElement(40, calibResponse);
