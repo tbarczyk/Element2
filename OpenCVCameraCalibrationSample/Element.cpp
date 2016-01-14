@@ -17,10 +17,8 @@ Mat getElement(int elHeight, calibrationResult calibData, int elX, int elY)
 
 	int lastImgIndex = calibData.rvecs.size()-1;
 
-	//objectPoints.push_back(Point3d(elX, elY, 0));
-	//objectPoints.push_back(Point3d(elX + elHeight, elY , 0));
-	objectPoints.push_back(Point3d(elX, elY, 0));
-	objectPoints.push_back(Point3d(elX, elY, -1*elHeight));
+	objectPoints.push_back(Point3d(elX,elY, 0));
+	objectPoints.push_back(Point3d(elX,elY, -elHeight));
 	
 
 	cv::projectPoints(Mat(objectPoints), calibData.rvecs[lastImgIndex], calibData.tvecs[lastImgIndex], calibData.cameraMatrix,
@@ -48,8 +46,8 @@ Mat getElement(int elHeight, calibrationResult calibData, int elX, int elY)
 	//stringstream aaa;
 	//aaa << elX;
 	//string a = aaa.str();
-	cv::namedWindow("Adaptative structuring element");
-	//cv::moveWindow("Adaptative structuring element", 300, 300);
+	cv::namedWindow("Adaptative structuring element",0);
+	cv::moveWindow("Adaptative structuring element", 300, 300);
 	//cv::resizeWindow("Adaptative structuring element", 640, 480);
 	imshow("Adaptative structuring element", croppedImage);
 

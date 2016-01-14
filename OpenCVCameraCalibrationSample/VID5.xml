@@ -1,15 +1,12 @@
 <?xml version="1.0"?>
 <opencv_storage>
 <images>
-samples/FileName1.tif
-samples/FileName2.tif
-samples/FileName3.tif
-samples/FileName4.tif
-samples/FileName5.tif
-samples/FileName6.tif
-samples/FileName7.tif
-samples/FileName8.tif
-samples/FileName9.tif
-samples/FileNameSCENE.tif
+samples2/FileName3.tif
+samples2/FileName4.tif
+samples2/FileName5.tif
+samples2/FileName7.tif
+samples2/FileName9.tif
+samples2/FileName10.tif
+samples2/FileNameSCENE.tif
 </images>
 </opencv_storage>
