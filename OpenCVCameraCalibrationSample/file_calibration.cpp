@@ -362,8 +362,9 @@ calibrationResult FilesCalibration::StartFilesCalibration()
 		}
 
 		//------------------------------ Show image and check for input commands -------------------
-
-		//imshow("Image View", view);
+		namedWindow("Image View", 0);
+		resizeWindow("Image View", 640, 480);
+		imshow("Image View", view);
 		char key = (char)waitKey(s.inputCapture.isOpened() ? 50 : s.delay);
 
 		if (key == ESC_KEY)
@@ -410,10 +411,15 @@ calibrationResult FilesCalibration::StartFilesCalibration()
 		lineObjectPoints.push_back(Point3d(0, 50, 0));
 		lineObjectPoints.push_back(Point3d(0, 0, 50));
 
-
-		cv::projectPoints(Mat(objectPoints), res.rvecs[lastImgIndex], res.tvecs[lastImgIndex], res.cameraMatrix,
-			res.distCoeffs, imagePoints);
-
+		try{
+			cv::projectPoints(Mat(objectPoints), res.rvecs[lastImgIndex], res.tvecs[lastImgIndex], res.cameraMatrix,
+				res.distCoeffs, imagePoints);
+		}
+		catch (Exception ex)
+		{
+			AfxMessageBox(CString("FILES ARE NOT SHARP ENOUGH! Calibration Failed"), MB_OK | MB_ICONEXCLAMATION);
+			return res;
+		}
 		cv::projectPoints(Mat(objectPointCenter), res.rvecs[lastImgIndex], res.tvecs[lastImgIndex], res.cameraMatrix,
 			res.distCoeffs, imagePointCenter);
 
@@ -653,161 +659,3 @@ calibrationResult runCalibrationAndSave(Settings& s, Size imageSize, Mat&  camer
 	result.distCoeffs = distCoeffs;
 	return result;
 }
-
-
-
-//freopen("CONOUT$", "w", stdout);
-//cout << "aaaaaaaaaaaaaaaa";
-
-//cv::ocl::DevicesInfo devInfo;
-//int res = cv::ocl::getOpenCLDevices(devInfo);
-//if (res == 0)
-//{
-//	std::cerr << "There is no OPENCL Here !" << std::endl;
-//}
-//else
-//{
-//	for (unsigned int i = 0; i < devInfo.size(); ++i)
-//	{
-//		std::cout << "Device : " << devInfo[i]->deviceName << " is present" << std::endl;
-//	}
-//}
-
-//cv::ocl::setDevice(devInfo[0]);        // select device to use
-//std::cout << CV_VERSION_EPOCH << "." << CV_VERSION_MAJOR << "." << CV_VERSION_MINOR << std::endl;
-
-//const char *KernelSource = "\n" \
-			//	"__kernel void negaposi_C1_D0(               \n" \
-			//	"   __global uchar* input,                   \n" \
-			//	"   __global uchar* output)                  \n" \
-			//	"{                                           \n" \
-			//	"   int i = get_global_id(0);                \n" \
-			//	"   output[i] = 255 - input[i];              \n" \
-			//	"}\n";
-
-/*cv::Mat mat_src = cv::imread("lena.jpg", cv::IMREAD_GRAYSCALE);
-cv::Mat mat_dst;
-if (mat_src.empty())
-{
-std::cerr << "Failed to open image file." << std::endl;
-}*/
-//unsigned int channels = mat_src.channels();
-//unsigned int depth = mat_src.depth();
-
-//cv::ocl::oclMat ocl_src(mat_src);
-//cv::ocl::oclMat ocl_dst(mat_src.size(), mat_src.type());
-
-//cv::ocl::ProgramSource program("negaposi", KernelSource);
-//std::size_t globalThreads[3] = { ocl_src.rows * ocl_src.step, 1, 1 };
-//std::vector<std::pair<size_t, const void *> > args;
-//args.push_back(std::make_pair(sizeof(cl_mem), (void *)&ocl_src.data));
-//args.push_back(std::make_pair(sizeof(cl_mem), (void *)&ocl_dst.data));
-//cv::ocl::openCLExecuteKernelInterop(cv::ocl::Context::getContext(),
-//	program, "negaposi", globalThreads, NULL, args, channels, depth, NULL);
-//ocl_dst.download(mat_dst);
-
-//cv::namedWindow("mat_src");
-
-//cv::destroyAllWindows();
-
-//const clock_t begin_time2 = clock();
-//for (int i = 0; i < 1; i++)
-//{
-//	threshold(grayView, grayView0, 200, 255, THRESH_BINARY);
-//}
-//float ocv = float(clock() - begin_time2) / CLOCKS_PER_SEC;
-
-//const clock_t begin_time = clock();
-//for (int i = 0; i < 1; i++)
-//{
-//	cv::ocl::threshold(oclSrc, oclDst, 200, 255, THRESH_BINARY);
-//}
-//float ocl = float(clock() - begin_time) / CLOCKS_PER_SEC;
-///*static const ocl::DeviceInfo devicesInfo = ocl::DeviceInfo();*/
-//ocl::PlatformsInfo platforms;
-//int platformCount = ocl::getOpenCLPlatforms(platforms);
-
-//ocl::DevicesInfo devices;
-//int devicesCount = ocl::getOpenCLDevices(devices);
-//ocl::oclMat afterErodeOcl;
-//Mat afterErodeOcv;
-//Mat kernel = getStructuringElement(MORPH_ELLIPSE, Size(31, 51));
-//ocl::oclMat kernelOCL = ocl::oclMat(kernel);
-////auto B = new int[10][20];
-////for (int i = 0; i<kernel.rows; i++){ 
-////	uchar* rowi = kernel.ptr/*<uchar>*/(i);
-////	for (int j = 0; j<kernel.cols; j++){
-////		rowi[j] = rowi[j] * 255;
-////	}
-////}
-//try
-//{
-//	const clock_t begin_time1 = clock();
-//	ocl::erode(oclDst, afterErodeOcl, kernelOCL);
-//	float oclerode = float(clock() - begin_time1) / CLOCKS_PER_SEC;
-
-//	const clock_t begin_time2 = clock();
-//	cv::erode(grayView0, afterErodeOcv, kernel);
-//	float ocverode = float(clock() - begin_time2) / CLOCKS_PER_SEC;
-
-//	//ocl::morphologyEx(oclDst, afterErodeOcl, 1, kernel);
-//	//2058 2456
-//	Mat dstFromOcl = Mat(oclDst);
-//	Mat dsfAfterErodeOcl = Mat(afterErodeOcl);
-
-//	
-//	const char* winName = "threshold";
-//	namedWindow(winName, 0);
-//	cvResizeWindow(winName, 800, 600);
-//	namedWindow("erode", 0);
-//	cvResizeWindow("erode", 800, 600);
-//	imshow(winName, afterErodeOcv);
-//	
-//	imshow("erode", dsfAfterErodeOcl);
-//}
-//catch (cv::Exception & e)
-//{
-//	cout << "oo" << endl;
-//}
-
-
-/*objectPoints.push_back(Point3d(100, 100, 0));
-objectPoints.push_back(Point3d(130, 100, 0));
-objectPoints.push_back(Point3d(50, 50, 0));
-objectPoints.push_back(Point3d(50, 80, 0));*/
-
-/*pair<double, double> elVector = make_pair(imagePoints[1].x - imagePoints[0].x, imagePoints[1].y - imagePoints[0].y);
-double norm = sqrt(elVector.first*elVector.first + elVector.second*elVector.second);
-double cosinus = elVector.first / norm;
-double sinus = elVector.second / norm;
-int angle = (int)(acos(cosinus) * 180 / PI * (sinus > 0 ? -1 : 1)*(sinus == 0 ? 0 : 1) + 360) % 360;
-*/
-
-
-
-/*double ch = cos(0.0835);
-double sh = sin(0.0835);
-double ca = cos(0.7896);
-double sa = sin(0.7896);
-double cb = cos(0.05059);
-double sb = sin(0.05059);
-
-double m00 = ch * ca;
-double m01 = sh*sb - ch*sa*cb;
-double m02 = ch*sa*sb + sh*cb;
-double m10 = sa;
-double m11 = ca*cb;
-double m12 = -ca*sb;
-double m20 = -sh*ca;
-double m21 = sh*sa*cb + ch*sb;
-double m22 = -sh*sa*sb + ch*cb;*/
-
-/*	m00 = ch * ca;aa
-m01 = sh*sb - ch*sa*cb;
-m02 = ch*sa*sb + sh*cb;
-m10 = sa;
-m11 = ca*cb;
-m12 = -ca*sb;
-m20 = -sh*ca;
-m21 = sh*sa*cb + ch*sb;
-m22 = -sh*sa*sb + ch*cb;*/

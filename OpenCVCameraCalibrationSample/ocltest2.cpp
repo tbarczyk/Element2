@@ -87,7 +87,7 @@ void initOCL(cv::Mat elMat) {
 		"	const int2 elementCoords = element[i];									\n" \
 		"	const int2 imageCoords = coords + elementCoords - (elementDim >> 1);	\n" \
 		"	const uint4 imagePixel = read_imageui(image, sampler, imageCoords);		\n" \
-		"	if (imagePixel.x < 255) {												\n" \
+		"	if (imagePixel.x < 200) {												\n" \
 		"		ans.x = 0;															\n" \
 		"		ans.y = 0;															\n" \
 		"		ans.z = 0;															\n" \
@@ -146,7 +146,7 @@ void initOCL(cv::Mat elMat) {
 	cl_int2 elementDimData = {elX , elY };
 	//int elementData[elX * elY * 2] = { 1, 2, 3, 4, 5, 6, 7, 20 };
 
-	cl_mem element = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, elementDimData.x * elementDimData.y * 2 * sizeof(int), elementData, &err);
+	cl_mem element = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, elementDimData.x * elementDimData.y * 2 * sizeof(int), elementData, &err);
 	err = clEnqueueWriteBuffer(command_queue, element, CL_TRUE, 0, 0, elementData, 0, NULL, &event[0]);
 
 	// Step 7 : Create and Build Program

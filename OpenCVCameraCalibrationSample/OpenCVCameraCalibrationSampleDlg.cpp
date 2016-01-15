@@ -390,22 +390,21 @@ void COpenCVCameraCalibrationSampleDlg::StreamCBFunc(J_tIMAGE_INFO * pAqImageInf
 	objectPoints.push_back(Point3d(0, 60, 0));*/
 
 	memcpy(m_pImg->imageData, pAqImageInfo->pImageBuffer, m_pImg->imageSize);
-	
-	cv::Mat viewAfterConversion;
 	cv::Mat viewAfterConversion2;
+	cv::Mat viewAfterConversion;
 	cv::Mat image(m_pImg);
 	cv::cvtColor(image, viewAfterConversion, CV_BayerRG2GRAY);
 	//cv::ellipse(viewAfterConversion, imagePoints[0], cv::Size(50, 100), 0, 0, 360, cv::Scalar(100, 100, 100), -1, 8, 0);
 	//cv::ellipse(viewAfterConversion, imagePoints[1], cv::Size(50, 100), 30, 0, 360, cv::Scalar(100, 100, 100), -1, 8, 0);
 	cv::Mat oclSrc;
-	cv::threshold(viewAfterConversion, oclSrc, 80, 255, cv::THRESH_BINARY);
+	cv::threshold(viewAfterConversion, oclSrc, 100, 255, cv::THRESH_BINARY);
 
-	cv::bitwise_not(oclSrc, viewAfterConversion2);
+	//cv::bitwise_not(oclSrc, viewAfterConversion2);
 	
-	cv::Mat result = cv::Mat(viewAfterConversion2.rows, viewAfterConversion2.cols, CV_8UC1);
-	result = executeKernel(viewAfterConversion2);
+	cv::Mat result = cv::Mat(oclSrc.rows, oclSrc.cols, CV_8UC1);
+	result = executeKernel(oclSrc);
 	cv::imshow(winCameraName, result);
-	cv::imshow("bin", viewAfterConversion2);
+	cv::imshow("bin", oclSrc);
 	
 	/*
 	int count = 0;
@@ -1058,7 +1057,7 @@ void COpenCVCameraCalibrationSampleDlg::OnBnClickedFilescalib()
 	GetDlgItem(PRESTART_BTN)->EnableWindow(calibResponse.ok ? TRUE : FALSE);
 	GetDlgItem(OCLBTN)->EnableWindow(calibResponse.ok ? TRUE : FALSE);
 
-	initOCL(getElement(10, calibResponse, -30, 90));
+	initOCL(getElement(15, calibResponse, 0, 0));
 
 	//cv::Mat element = getElement(40, calibResponse);
 
@@ -1079,16 +1078,18 @@ void COpenCVCameraCalibrationSampleDlg::OnBnClickedOclbtn()
 	cv::Mat result = cv::Mat(mat_src.rows, mat_src.cols, CV_8UC1); 
 	cv::Mat resultOCV = cv::Mat(mat_src.rows, mat_src.cols, CV_8UC1);
 	float c = clock();
-	result = executeKernel(mat_src);
+	
+		result = executeKernel(mat_src);
 	
 	float t = float(clock() - c) / CLOCKS_PER_SEC;
 	cv::namedWindow("res1");
 	cv::imshow("res1", result);
-	cv::Mat el = getElement(10, calibResponse, -30, 90);
+	cv::Mat el = getElement(15, calibResponse, 0, 0);
 	c = clock();
 	cv::erode(mat_src, resultOCV, el);
 	t = float(clock() - c) / CLOCKS_PER_SEC;
 	cv::namedWindow("resOCV");
+
 	cv::imshow("resOCV", resultOCV);
 	/*mat_src = cv::imread("lena6.bmp", cv::IMREAD_GRAYSCALE);
 	result = executeKernel(mat_src);*/
