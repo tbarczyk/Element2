@@ -38,19 +38,20 @@ vector<cl_int2> getElement(cv::Mat elementMatrix)
 	//cv::namedWindow("struct_elem");
 	//cv::imshow("struct_elem", elementMatrix);
 	vector<cl_int2> elementVector;
-	unsigned char * matrix = (unsigned char*)(elementMatrix.data);
-	for (int i = 0; i < elementMatrix.cols; i++)
+	//unsigned char * matrix = (unsigned char*)(elementMatrix.data);
+	for (int i = 0; i < elementMatrix.rows; i++)
 	{
-		for (int j = 0; j < elementMatrix.rows; j++) 
+		for (int j = 0; j < elementMatrix.cols; j++) 
 		{
-			if (matrix[elementMatrix.cols*j + i] != 0)
+			if(elementMatrix.at<unsigned char>(i,j) != 0 )
+			//if (elementMatrix.data[elementMatrix.cols*j + i] != 0)
 			{
 				cl_int2 a = { i,j };
 				elementVector.push_back(a);
 			}
 		}
 	}
-	random_shuffle(elementVector.begin(), elementVector.end());
+	//random_shuffle(elementVector.begin(), elementVector.end());
 	return elementVector;
 }
 
@@ -82,11 +83,11 @@ void initOCL(cv::Mat elMat) {
 		"}																			\n" \
 		"const sampler_t sampler =													\n" \
 		"	CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP | CLK_FILTER_NEAREST;	\n" \
-		"uint4 ans = { 255, 255, 255, 255 };										\n" \
-		"for (int i = 0; i < sizeOfElement; ++i) {									\n" \
+		"float4 ans = { 255, 255, 255, 255 };										\n" \
+		"for (int i = 0; i < sizeOfElement; i++) {									\n" \
 		"	const int2 elementCoords = element[i];									\n" \
 		"	const int2 imageCoords = coords + elementCoords - (elementDim >> 1);	\n" \
-		"	const uint4 imagePixel = read_imageui(image, sampler, imageCoords);		\n" \
+		"	const float4 imagePixel = read_imagef(image, sampler, imageCoords);		\n" \
 		"	if (imagePixel.x < 200) {												\n" \
 		"		ans.x = 0;															\n" \
 		"		ans.y = 0;															\n" \
@@ -95,7 +96,7 @@ void initOCL(cv::Mat elMat) {
 		"		break;																\n" \
 		"	}																		\n" \
 		"}																			\n" \
-		"write_imageui(imageOut, coords, ans);	};									\n";
+		"write_imagef(imageOut, coords, ans);	};									\n";
 	
 	
 	// step 1 : getting platform ID
@@ -123,7 +124,7 @@ void initOCL(cv::Mat elMat) {
 
 	//  Create Image data formate
 	img_fmt.image_channel_order = CL_R;
-	img_fmt.image_channel_data_type = CL_UNSIGNED_INT32;
+	img_fmt.image_channel_data_type = CL_FLOAT;
 	
 	// Step 6 : Create Image Memory Object
 
@@ -146,7 +147,7 @@ void initOCL(cv::Mat elMat) {
 	cl_int2 elementDimData = {elX , elY };
 	//int elementData[elX * elY * 2] = { 1, 2, 3, 4, 5, 6, 7, 20 };
 
-	cl_mem element = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, elementDimData.x * elementDimData.y * 2 * sizeof(int), elementData, &err);
+	cl_mem element = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, elementDimData.x * elementDimData.y * 2 * sizeof(int), elementData, &err);
 	err = clEnqueueWriteBuffer(command_queue, element, CL_TRUE, 0, 0, elementData, 0, NULL, &event[0]);
 
 	// Step 7 : Create and Build Program
@@ -191,7 +192,7 @@ cv::Mat executeKernel(cv::Mat mat_src)
 	float cAll = clock();
 	float t = float(clock() - c) / CLOCKS_PER_SEC;
 	c = clock();
-	static unsigned int matData[WIDTH*HEIGHT];
+	static float matData[WIDTH*HEIGHT];
 
 	for (int i = 0; i < WIDTH*HEIGHT; i++)
 		matData[i] = mat_src.data[i];
@@ -209,7 +210,7 @@ cv::Mat executeKernel(cv::Mat mat_src)
 	t = float(clock() - c) / CLOCKS_PER_SEC;
 	c = clock();
 	err = clEnqueueNDRangeKernel(command_queue, kernel, 2, NULL, GWSize, NULL, 1, event, &event[1]);
-	static unsigned int output[WIDTH*HEIGHT];
+	static float output[WIDTH*HEIGHT];
 	t = float(clock() - c) / CLOCKS_PER_SEC;
 	c = clock();
 	err = clEnqueueReadImage(command_queue, image2, CL_TRUE, origin, region, 0, 0, output, 2, event, &event[2]);
