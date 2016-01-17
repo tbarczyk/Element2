@@ -1084,7 +1084,8 @@ void COpenCVCameraCalibrationSampleDlg::OnBnClickedOclbtn()
 		result = executeKernel(mat_src);
 	
 	float t = float(clock() - c) / CLOCKS_PER_SEC;
-	cv::namedWindow("res1");
+	cv::namedWindow("res1",0);
+	cv::resizeWindow("res1", 640, 480);
 	cv::imshow("res1", result);
 
 	//cv::Mat el = getElement(15, calibResponse, 0, 0);
