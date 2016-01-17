@@ -39,7 +39,7 @@ vector<cl_int2> getElement(cv::Mat elementMatrix)
 		{
 			if(elementMatrix.at<unsigned char>(i,j) != 0 )
 			{
-				cl_int2 a = { i,j };
+				cl_int2 a = { j,i };
 				elementVector.push_back(a);
 			}
 		}
@@ -91,7 +91,7 @@ void initOCL(cv::Mat elMat) {
 	err_check(err, "clGetPlatformIDs");
 	for (int i = 0; i < platformIdCount; i++)
 	{
-		err = clGetDeviceIDs(platform_id[i], CL_DEVICE_TYPE_GPU, 1, &device_id, &ret_num_device);		
+		err = clGetDeviceIDs(platform_id[i], CL_DEVICE_TYPE_CPU, 1, &device_id, &ret_num_device);		
 		if (err == CL_SUCCESS)
 			break;
 	}
