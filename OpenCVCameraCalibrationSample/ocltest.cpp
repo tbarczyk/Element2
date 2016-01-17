@@ -12,7 +12,7 @@
 using namespace std;
 
 cl_context context = NULL;
-cl_platform_id platform_id = NULL;
+
 cl_uint ret_num_platform;
 cl_device_id device_id = NULL;
 cl_uint ret_num_device;
@@ -81,16 +81,26 @@ void initOCL(cv::Mat elMat) {
 		"}																			\n" \
 		"write_imagef(imageOut, coords, ans);	};									\n";
 	
-	
-	// step 1 : getting platform ID
-	err = clGetPlatformIDs(1, &platform_id, &ret_num_platform);
-	err_check(err, "clGetPlatformIDs");
 
-	// step 2 : Get Device ID
-	err = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 1, &device_id, &ret_num_device);
-	if (err==-1) 
+	cl_uint platformIdCount = 0;
+	clGetPlatformIDs(0, nullptr, &platformIdCount);
+	std::vector<cl_platform_id> platform_id(platformIdCount);
+
+	// step 1 : getting platform ID
+	err = clGetPlatformIDs(platformIdCount, platform_id.data(), nullptr);
+	err_check(err, "clGetPlatformIDs");
+	for (int i = 0; i < platformIdCount; i++)
+	{
+		err = clGetDeviceIDs(platform_id[i], CL_DEVICE_TYPE_GPU, 1, &device_id, &ret_num_device);		
+		if (err == CL_SUCCESS)
+			break;
+	}
+	if (err != CL_SUCCESS)
 		AfxMessageBox(CString("OpenCL device not found...app will be closed!"), MB_OK | MB_ICONEXCLAMATION);
 	err_check(err, "clGetDeviceIDs");
+		
+	// step 2 : Get Device ID
+	
 
 	// step 3 : Create Context
 	context = clCreateContext(NULL, 1, &device_id, NULL, NULL, &err);
