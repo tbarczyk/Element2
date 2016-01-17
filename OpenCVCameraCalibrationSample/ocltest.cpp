@@ -1,209 +1,215 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
+#include "config.h"
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-//#include <boost/compute.hpp>
-//#include <boost/compute/interop/opencv/core.hpp>
 #include "opencv2/ocl/ocl.hpp"
 #pragma comment (lib,"OpenCL.lib")
 #include <CL/cl.hpp>
 #include <opencv2/opencv.hpp>
 #include <opencv2/legacy/compat.hpp>
+using namespace std;
 
-void testOCL() {
-	cv::ocl::DevicesInfo devInfo;
-	int res = cv::ocl::getOpenCLDevices(devInfo);
-	if (res == 0)
+cl_context context = NULL;
+cl_platform_id platform_id = NULL;
+cl_uint ret_num_platform;
+cl_device_id device_id = NULL;
+cl_uint ret_num_device;
+cl_command_queue command_queue = NULL;
+cl_program program = NULL;
+cl_kernel kernel = NULL;
+cl_int err;
+cl_mem image1, image2;
+size_t kernel_src_size;
+cl_image_format img_fmt;
+cl_bool sup;
+size_t rsize;
+size_t origin[] = { 0, 0, 0 }; // Defines the offset in pixels in the image from where to write.
+size_t region[] = { WIDTH, HEIGHT, 1 }; // Size of object to be transferred
+size_t GWSize[4];
+cl_event event[5];
+
+vector<cl_int2> getElement(cv::Mat elementMatrix)
+{
+	vector<cl_int2> elementVector;
+	for (int i = 0; i < elementMatrix.rows; i++)
 	{
-		std::cerr << "There is no OPENCL Here !" << std::endl;
-	}
-	else
-	{
-		for (unsigned int i = 0; i < devInfo.size(); ++i)
+		for (int j = 0; j < elementMatrix.cols; j++) 
 		{
-			std::cout << "Device : " << devInfo[i]->deviceName << " is present" << std::endl;
-		}
-	}
-
-	cv::ocl::setDevice(devInfo[0]);        // select device to use
-	std::cout << CV_VERSION_EPOCH << "." << CV_VERSION_MAJOR << "." << CV_VERSION_MINOR << std::endl;
-
-	/*const char *KernelSource = "\n" \
-		"__kernel void erode(																											\n" \
-		"	read_only image2d_t image,																									\n" \
-		"	int sizeOfElement, write_only image2d_t imageOut, int imageWidth, int imageHeight) {										\n" \
-		"																																\n" \
-		"	const int2 coords = { get_global_id(0), get_global_id(1) };																	\n" \
-		"	if (coords.x >= imageWidth || coords.y >= imageHeight){																		\n" \
-		"		return;																													\n" \
-		"	}																															\n" \
-		"	const sampler_t sampler =																									\n" \
-		"		CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP | CLK_FILTER_NEAREST;													\n" \
-		"	uint4 ans = { 255, 255, 255, 255 };																							\n" \
-		"	for (int i = 0; i < sizeOfElement; ++i) {																					\n" \
-		"		const int2 elementCoords = element[i];																					\n" \
-		"		const int2 imageCoords = coords;																						\n" \
-		"		const uint4 imagePixel = read_imageui(image, sampler, imageCoords);														\n" \
-		"		if (imagePixel.x < 255) {																								\n" \
-		"			ans.x = 0;																											\n" \
-		"			ans.y = 0;																											\n" \
-		"			ans.z = 0;																											\n" \
-		"			ans.w = 0;																											\n" \
-		"			break;																												\n" \
-		"		}																														\n" \
-		"	}																															\n" \
-		"	write_imageui(imageOut, coords, ans);																						\n" \
-		"}																																\n";*/
-
-	/*const char *KernelSource = "\n" \
-		"__kernel void erode(				                \n" \
-			"   __global uchar* input,						\n" \
-			"   __global uchar* output)						\n" \
-			"{												\n" \
-			"   int i = get_global_id(0);					\n" \
-			"   output[i] = input[i] >= 100 ? 0 : 255;      \n" \
-			"}\n";*/
-	
-		
-	//"__kernel void negaposi_C1_D0(               \n" \
-			//"   __global uchar* input,                   \n" \
-			//"   __global uchar* output)                  \n" \
-			//"{                                           \n" \
-			//"   int i = get_global_id(0);                \n" \
-			//"   output[i] = input[i] >= 100 ? 0 : 255;              \n" \
-			//"}\n";
-	
-	/*const char sourceSmart[] = BOOST_COMPUTE_STRINGIZE_SOURCE(__kernel void erode(
-		read_only image2d_t image, __global read_only int2 *element,
-		int sizeOfElement, write_only image2d_t imageOut, int2 elementDim, int imageWidth, int imageHeight) {
-
-		const int2 coords = { get_global_id(0), get_global_id(1) };
-		if (coords.x >= imageWidth || coords.y >= imageHeight){
-			return;
-		}
-		const sampler_t sampler =
-			CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP | CLK_FILTER_NEAREST;
-		uint4 ans = { 255, 255, 255, 255 };
-		for (int i = 0; i < sizeOfElement; ++i) {
-			const int2 elementCoords = element[i];
-			const int2 imageCoords = coords + elementCoords - (elementDim >> 1);
-			const uint4 imagePixel = read_imageui(image, sampler, imageCoords);
-			if (imagePixel.x < 255) {
-				ans.x = 0;
-				ans.y = 0;
-				ans.z = 0;
-				ans.w = 0;
-				break;
+			if(elementMatrix.at<unsigned char>(i,j) != 0 )
+			{
+				cl_int2 a = { i,j };
+				elementVector.push_back(a);
 			}
 		}
-		write_imageui(imageOut, coords, ans);
-	});*/
-	//cl::Image2D aa = cl::Image2D(cv::ocl::Context::getContext(), CL_MEM_READ_WRITE, cl::ImageFormat(CL_RGBA, CL_UNORM_INT8));
-	
-	//cv::Mat mat_src = cv::imread("lena.jpg", cv::IMREAD_GRAYSCALE);
-	//cv::Mat mat_dst;
-	//if (mat_src.empty())
-	//{
-	//	std::cerr << "Failed to open image file." << std::endl;
-	//}
-	//unsigned int channels = mat_src.channels();
-	//unsigned int depth = mat_src.depth();
-
-	//cv::ocl::oclMat ocl_src(mat_src);
-	//cv::ocl::oclMat ocl_dst(mat_src.size(), mat_src.type());
-	//cv::Mat notSrc, notDst;
-	//notSrc = cv::Mat(ocl_src);
-	//cv::ocl::ProgramSource program("erode", KernelSource);
-	//std::size_t globalThreads[3] = { ocl_src.rows * ocl_src.step, 1, 1 };
-	//std::size_t localThreads[3] = { ocl_src.rows * ocl_src.step, 1, 1 };
-	//std::vector<std::pair<size_t, const void *> > args;
-	////args.push_back(std::make_pair(sizeof(cl_mem), (void *)&ocl_src.data));
-	//
-	//cv::Mat element = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(50, 50));
-	//cv::ocl::oclMat elementOcl = cv::ocl::oclMat(element);
-	//args.push_back(std::make_pair(sizeof(cl_mem), (void *)&ocl_src.data));
-	////args.push_back(std::make_pair(sizeof(cl_mem), (void *)100));
-	//args.push_back(std::make_pair(sizeof(cl_mem), (void *)&ocl_dst.data));
-	//args.push_back(std::make_pair(sizeof(cl_mem), (void *)1000));
-	//args.push_back(std::make_pair(sizeof(cl_mem), (void *)1000));
-	/*read_only image2d_t image, __global read_only int2 *element, int sizeOfElement, write_only image2d_t imageOut, int2 elementDim, int imageWidth, int imageHeight*/
-	//cl_mem imageSource = clCreateImage2D(, );
-
-//		"	read_only image2d_t image,																									\n" \
-//		"	int sizeOfElement, write_only image2d_t imageOut, int imageWidth, int imageHeight) {										\n" \
-	
-	/*float c1 = clock();
-	
-		cv::ocl::openCLExecuteKernelInterop(cv::ocl::Context::getContext(),
-			program, "erode", globalThreads, NULL, args, channels, depth, NULL);
-	
-	ocl_dst.download(mat_dst);
-	float t1 = (clock() - c1) / CLOCKS_PER_SEC;
-	ocl_dst.download(mat_dst);
-	float c2 = clock();
-	for (int i = 0; i < 200000; i++)
-		cv::threshold(notSrc, notDst, 100, 255, 1);
-	float t2 = (clock() - c2) / CLOCKS_PER_SEC;*/
-
-
-	const char *KernelSource = "\n" \
-		"__kernel void erode_C1_D0(               \n" \
-		"   __global uchar* input,                   \n" \
-		"   __global uchar* image,                   \n" \
-		"   __global uchar* output)                  \n" \
-		"{                                           \n" \
-		"   int i = get_global_id(0);                \n" \
-		"   output[i] = 255 - input[i];              \n" \
-		"}\n";
-
-	cv::Mat mat_src = cv::imread("lena.jpg", cv::IMREAD_GRAYSCALE);
-	cv::Mat mat_dst;
-	if (mat_src.empty())
-	{
-		std::cerr << "Failed to open image file." << std::endl;
 	}
-	unsigned int channels = mat_src.channels();
-	unsigned int depth = mat_src.depth();
+	random_shuffle(elementVector.begin(), elementVector.end());
+	return elementVector;
+}
 
-	cv::ocl::oclMat ocl_src(mat_src);
-	cv::ocl::oclMat ocl_dst(mat_src.size(), mat_src.type());
+void err_check(int err, string err_code) {
+	if (err != CL_SUCCESS) {
+  		cout << "Error: " << err_code << "(" << err << ")" << endl;
+		exit(-1);
+	}
+}
 
-	cv::ocl::ProgramSource program("erode", KernelSource);
-	std::size_t globalThreads[3] = { ocl_src.rows * ocl_src.step, 1, 1 };
-	std::vector<std::pair<size_t, const void *> > args;
-	args.push_back(std::make_pair(sizeof(cl_mem), (void *)&ocl_src.data));
-	args.push_back(std::make_pair(sizeof(cl_mem), (void *)&ocl_src.data));
-	args.push_back(std::make_pair(sizeof(cl_mem), (void *)&ocl_dst.data));
-	cv::ocl::openCLExecuteKernelInterop(cv::ocl::Context::getContext(),
-		program, "erode", globalThreads, NULL, args, channels, depth, NULL);
+void initOCL(cv::Mat elMat) {
+
+	char* kernel_src_std =
+		"__kernel void image_copy(read_only image2d_t image, write_only image2d_t imageOut, int sizeOfElement, int2 elementDim, int imageWidth, int imageHeight, __global read_only int2* element)						 \n" \
+		"{																											 \n" \
+		"const int2 coords = { get_global_id(0), get_global_id(1) };				\n" \
+		"if (coords.x >= imageWidth || coords.y >= imageHeight){					\n" \
+		"	return;																	\n" \
+		"}																			\n" \
+		"const sampler_t sampler =													\n" \
+		"	CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP | CLK_FILTER_NEAREST;	\n" \
+		"float4 ans = { 255, 255, 255, 255 };										\n" \
+		"for (int i = 0; i < sizeOfElement; i++) {									\n" \
+		"	const int2 elementCoords = element[i];									\n" \
+		"	const int2 imageCoords = coords + elementCoords - (elementDim >> 1);	\n" \
+		"	const float4 imagePixel = read_imagef(image, sampler, imageCoords);		\n" \
+		"	if (imagePixel.x<255) {												\n" \
+		"		ans.x = 0;															\n" \
+		"		ans.y = 0;															\n" \
+		"		ans.z = 0;															\n" \
+		"		ans.w = 0;															\n" \
+		"		break;																\n" \
+		"	}																		\n" \
+		"}																			\n" \
+		"write_imagef(imageOut, coords, ans);	};									\n";
 	
-	ocl_dst.download(mat_dst);
+	
+	// step 1 : getting platform ID
+	err = clGetPlatformIDs(1, &platform_id, &ret_num_platform);
+	err_check(err, "clGetPlatformIDs");
 
-	cv::namedWindow("mat_src");
-	cv::namedWindow("ocl");
-	cv::imshow("mat_src", mat_src);
-	cv::imshow("ocl", mat_dst);
-//	cv::imshow("ocv", notDst);
-	cv::waitKey(0);
-	cv::destroyAllWindows();
+	// step 2 : Get Device ID
+	err = clGetDeviceIDs(platform_id, CL_DEVICE_TYPE_GPU, 1, &device_id, &ret_num_device);
+	if (err==-1) 
+		AfxMessageBox(CString("OpenCL device not found...app will be closed!"), MB_OK | MB_ICONEXCLAMATION);
+	err_check(err, "clGetDeviceIDs");
+
+	// step 3 : Create Context
+	context = clCreateContext(NULL, 1, &device_id, NULL, NULL, &err);
+	err_check(err, "clCreateContext");
+
+	clGetDeviceInfo(device_id, CL_DEVICE_IMAGE_SUPPORT, sizeof(sup), &sup, &rsize);
+	if (sup != CL_TRUE){
+		cout << "Image not Supported" << endl;
+	}
+	// Step 4 : Create Command Queue
+	command_queue = clCreateCommandQueue(context, device_id, 0, &err);
+	err_check(err, "clCreateCommandQueue");
+
+	// Step 5 : Reading Kernel Program
+	kernel_src_size = sizeof(kernel_src_std);
+
+	//  Create Image data formate
+	img_fmt.image_channel_order = CL_R;
+	img_fmt.image_channel_data_type = CL_FLOAT;
+	
+	// Step 6 : Create Image Memory Object
+
+	image1 = clCreateImage2D(context, CL_MEM_READ_ONLY, &img_fmt, WIDTH, HEIGHT, 0, 0, &err);
+	err_check(err, "image1: clCreateImage2D");
+
+	image2 = clCreateImage2D(context, CL_MEM_READ_WRITE, &img_fmt, WIDTH, HEIGHT, 0, 0, &err);
+	err_check(err, "image2: clCreateImage2D");
+
+	int elX = elMat.cols;
+	int elY = elMat.rows;
+	
+	vector<cl_int2> elementDataVector = getElement(elMat);
+	cl_int2* elementData = &elementDataVector[0];
+	cl_int2 elementDimData = {elX , elY };
+	
+	cl_mem element = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, elementDimData.x * elementDimData.y * 2 * sizeof(int), elementData, &err);
+	err = clEnqueueWriteBuffer(command_queue, element, CL_TRUE, 0, 0, elementData, 0, NULL, &event[0]);
+
+	// Step 7 : Create and Build Program
+	program = clCreateProgramWithSource(context, 1, (const char **)&kernel_src_std, 0, &err);
+	err_check(err, "clCreateProgramWithSource");
+
+	err = clBuildProgram(program, 1, &device_id, NULL, NULL, NULL);
+
+	if (err == CL_BUILD_PROGRAM_FAILURE)
+		cout << "clBulidProgram Fail...." << endl;
+	err_check(err, "clBuildProgram");
+
+	// Step 8 : Create Kernel
+	kernel = clCreateKernel(program, "image_copy", &err);
+
+	// Step 9 : Set Kernel Arguments
+	
+	int sizeOfElement = elementDataVector.size();
+	
+	int imageWidth = WIDTH;
+	int imageHeigth = HEIGHT;
+
+	err = clSetKernelArg(kernel, 1, sizeof(cl_mem), (void *)&image2);
+	err_check(err, "Arg 2 : clSetKernelArg");
+	err = clSetKernelArg(kernel, 2, sizeof(int), (void *)&sizeOfElement);
+	err = clSetKernelArg(kernel, 3, sizeof(cl_int2), (void *)&elementDimData);
+	err = clSetKernelArg(kernel, 4, sizeof(int), (void *)&imageWidth);
+	err = clSetKernelArg(kernel, 5, sizeof(int), (void *)&imageHeigth);
+	err = clSetKernelArg(kernel, 6, sizeof(cl_mem), (void *)&element);
+
+	GWSize[0] = WIDTH;
+	GWSize[1] = HEIGHT;
+	GWSize[2] = elementDimData.x * elementDimData.y * 2;
+	GWSize[3] = 1;
+
+
 };
 
-//boost::compute::image2d convertImage(const cv::Mat &cvimage, cl_mem_flags flags,
-//	boost::compute::command_queue &queue, const boost::compute::context &ctx) {
-//
-//	const boost::compute::image_format format(CL_R, CL_UNSIGNED_INT8);
-//	const auto formats = boost::compute::image2d::get_supported_formats(ctx);
-//	/*if (std::none_of(begin(formats), end(formats),[=](auto supFor) { return supFor == format; })) {
-//		assert(false);
-//	}*/
-//	using namespace boost::compute;
-//
-//	using std::tuple;
-//	using std::make_tuple;
-//	
-//	using cv::Mat;
-//	image2d image(ctx, cvimage.cols, cvimage.rows, format, flags);
-//	opencv_copy_mat_to_image(cvimage, image, queue);
-//	return image;
-//};
+cv::Mat executeKernel(cv::Mat mat_src)
+{
+	float c = clock();
+	float cAll = clock();
+	float t = float(clock() - c) / CLOCKS_PER_SEC;
+	c = clock();
+	static float matData[WIDTH*HEIGHT];
+
+	for (int i = 0; i < WIDTH*HEIGHT; i++)
+		matData[i] = mat_src.data[i];
+
+	t = float(clock() - c) / CLOCKS_PER_SEC;
+	c = clock();
+	
+	err = clSetKernelArg(kernel, 0, sizeof(cl_mem), (void *)&image1);
+	
+	err_check(err, "Arg 1 : clSetKernelArg");
+	t = float(clock() - c) / CLOCKS_PER_SEC;
+	c = clock();
+	err = clEnqueueWriteImage(command_queue, image1, CL_TRUE, origin, region, 0, 0, matData, 0, NULL, &event[0]);
+	err_check(err, "clEnqueueWriteImage");
+	t = float(clock() - c) / CLOCKS_PER_SEC;
+	c = clock();
+	err = clEnqueueNDRangeKernel(command_queue, kernel, 2, NULL, GWSize, NULL, 1, event, &event[1]);
+	static float output[WIDTH*HEIGHT];
+	t = float(clock() - c) / CLOCKS_PER_SEC;
+	c = clock();
+	err = clEnqueueReadImage(command_queue, image2, CL_TRUE, origin, region, 0, 0, output, 2, event, &event[2]);
+	
+	err_check(err, "clEnqueueCopyImage");
+	t = float(clock() - c) / CLOCKS_PER_SEC;
+	c = clock();
+	
+	uchar aaa[WIDTH * HEIGHT];
+	for (int i = 0; i < WIDTH * HEIGHT; i++)
+		aaa[i] = (uchar)output[i];
+
+	cv::Mat result = cv::Mat(HEIGHT, WIDTH, CV_8UC1, aaa);
+	t = float(clock() - c) / CLOCKS_PER_SEC;
+	c = clock();
+	cv::Mat result2 = cv::Mat(HEIGHT, WIDTH, CV_8UC1);
+	result.copyTo(result2);
+	
+	float tAll = float(clock() - cAll) / CLOCKS_PER_SEC;
+	return result2;
+}
+
+

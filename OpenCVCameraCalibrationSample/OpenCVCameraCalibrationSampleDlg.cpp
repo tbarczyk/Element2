@@ -1072,6 +1072,8 @@ void COpenCVCameraCalibrationSampleDlg::OnBnClickedFilescalib()
 
 void COpenCVCameraCalibrationSampleDlg::OnBnClickedOclbtn()
 {
+	//THIS IS TEST BUTTON FOR TESTING OPENCL ON ONE IMAGE
+
 	//cv::Mat elementMatrix = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(10, 20));
 	
 	cv::Mat mat_src = cv::imread(IMAGE_NAME, cv::IMREAD_GRAYSCALE);
@@ -1084,13 +1086,14 @@ void COpenCVCameraCalibrationSampleDlg::OnBnClickedOclbtn()
 	float t = float(clock() - c) / CLOCKS_PER_SEC;
 	cv::namedWindow("res1");
 	cv::imshow("res1", result);
-	cv::Mat el = getElement(15, calibResponse, 0, 0);
-	c = clock();
-	cv::erode(mat_src, resultOCV, el);
-	t = float(clock() - c) / CLOCKS_PER_SEC;
-	cv::namedWindow("resOCV");
 
-	cv::imshow("resOCV", resultOCV);
+	//cv::Mat el = getElement(15, calibResponse, 0, 0);
+	//c = clock();
+	//cv::erode(mat_src, resultOCV, el);
+	//t = float(clock() - c) / CLOCKS_PER_SEC;
+	//cv::namedWindow("resOCV");
+
+	//cv::imshow("resOCV", resultOCV);
 	/*mat_src = cv::imread("lena6.bmp", cv::IMREAD_GRAYSCALE);
 	result = executeKernel(mat_src);*/
 

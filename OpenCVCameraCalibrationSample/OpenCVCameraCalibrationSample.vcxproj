@@ -250,7 +250,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ocltest2.cpp" />
+    <ClCompile Include="ocltest.cpp" />
     <ClCompile Include="Element.cpp" />
     <ClCompile Include="file_calibration.cpp" />
     <ClCompile Include="OpenCVCameraCalibrationSample.cpp" />
@@ -261,7 +261,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="structural_element.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="config.h" />
@@ -281,9 +280,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="res\OpenCVCameraCalibrationSample.rc2" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="ReadMe.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -19,6 +19,8 @@ Mat getElement(int elHeight, calibrationResult calibData, int elX, int elY)
 
 	//objectPoints.push_back(Point3d(elX, elY, 0));
 	//objectPoints.push_back(Point3d(elX + elHeight, elY , 0));
+
+	//Element strukturalny stojący na scenie w punkcie (0,0). Elipsa ma wysokość elHeight
 	objectPoints.push_back(Point3d(elX, elY, 0));
 	objectPoints.push_back(Point3d(elX, elY, -elHeight));
 	
@@ -45,9 +47,7 @@ Mat getElement(int elHeight, calibrationResult calibData, int elX, int elY)
 	Rect Min_Rect = boundingRect(Points);
 	rectangle(el, Min_Rect.tl(), Min_Rect.br(), Scalar(0, 255, 0), 2);
 	cv::Mat croppedImage = el(Min_Rect);
-	//stringstream aaa;
-	//aaa << elX;
-	//string a = aaa.str();
+	
 	cv::namedWindow("Adaptative structuring element");
 	//cv::moveWindow("Adaptative structuring element", 300, 300);
 	//cv::resizeWindow("Adaptative structuring element", 640, 480);
