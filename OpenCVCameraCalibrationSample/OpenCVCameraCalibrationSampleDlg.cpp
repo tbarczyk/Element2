@@ -382,20 +382,12 @@ void COpenCVCameraCalibrationSampleDlg::StreamCBFunc(J_tIMAGE_INFO * pAqImageInf
 		m_ImgSize = cvGetSize(m_pImg);
 	}
 
-	std::vector<cv::Point2d> imagePoints;
-	
-	imagePoints.push_back(cv::Point2d(150,150));
-	imagePoints.push_back(cv::Point2d(350, 350));
-	/*objectPoints.push_back(Point3d(60, 0, 0));
-	objectPoints.push_back(Point3d(0, 60, 0));*/
-
 	memcpy(m_pImg->imageData, pAqImageInfo->pImageBuffer, m_pImg->imageSize);
 	cv::Mat viewAfterConversion2;
 	cv::Mat viewAfterConversion;
 	cv::Mat image(m_pImg);
 	cv::cvtColor(image, viewAfterConversion, CV_BayerRG2GRAY);
-	//cv::ellipse(viewAfterConversion, imagePoints[0], cv::Size(50, 100), 0, 0, 360, cv::Scalar(100, 100, 100), -1, 8, 0);
-	//cv::ellipse(viewAfterConversion, imagePoints[1], cv::Size(50, 100), 30, 0, 360, cv::Scalar(100, 100, 100), -1, 8, 0);
+
 	cv::Mat oclSrc;
 	cv::threshold(viewAfterConversion, oclSrc, 100, 255, cv::THRESH_BINARY);
 
@@ -405,152 +397,6 @@ void COpenCVCameraCalibrationSampleDlg::StreamCBFunc(J_tIMAGE_INFO * pAqImageInf
 	result = executeKernel(oclSrc);
 	cv::imshow(winCameraName, result);
 	cv::imshow("bin", oclSrc);
-	
-	/*
-	int count = 0;
-	int found = 0;
-	int index = 0;
-	*/
-	//if (!m_bCalibrated)
-	//{
-	//    // Look in all three images for the chessboard pattern
-	//    found = cvFindChessboardCorners(m_pImg, 
-	//                                    m_BoardSize, 
-	//                                    m_pImagePointsBuf, 
-	//                                    &count, 
-	//                                    CV_CALIB_CB_ADAPTIVE_THRESH);
-
-	//    if (found)
-	//    {
-	//        // improve the found corners' coordinate accuracy
-	//        cvFindCornerSubPix(m_pImg, 
-	//                           m_pImagePointsBuf, 
-	//                           count, 
-	//                           cvSize(11,11), 
-	//                           cvSize(-1,-1), 
-	//                           cvTermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ));
-
-	//        cvDrawChessboardCorners(m_pImg, 
-	//                                m_BoardSize, 
-	//                                m_pImagePointsBuf, 
-	//                                count, 
-	//                                found);
-	//    }
-
-	//    if (found)
-	//        m_CaptureDelay++;
-
-	//    if (found && (m_CaptureDelay>2))
-	//    {
-	//        // Add the image points
-	//        cvSeqPush(m_pImagePointsSeq, m_pImagePointsBuf);
-
-	//        // Do we have enough images?
-	//        if((unsigned)m_pImagePointsSeq->total >= (unsigned)m_ImageCount )
-	//        {
-	//            // Do the calibration part
-	//            cvReleaseMat(&m_pExtrParamsMatrix);
-	//            cvReleaseMat(&m_pReprojErrsMatrix);
-
-	//            int code = RunCalibration(m_pImagePointsSeq, 
-	//                                      m_ImgSize, 
-	//                                      m_BoardSize,
-	//                                      m_SquareSize, 
-	//                                      m_AspectRatio, 
-	//                                      m_Flags, 
-	//                                      &m_CameraMatrix, 
-	//                                      &m_DistCoeffsMatrix, 
-	//                                      &m_pExtrParamsMatrix,
-	//                                      &m_pReprojErrsMatrix, 
-	//                                      &m_AvgReprojRrr);
-
-	//            // Did the calibration succeed?
-	//            if(code)
-	//            {
-	//                m_bCalibrated = true;
-	//                m_bCalibratedChanged = true;
-
-	//                // Here we get the optical center and the focal length values from the intrinsic/camera matric
-	//                valueString.Format(_T("%0.5f"), CV_MAT_ELEM(m_CameraMatrix, double, 0,0));
-	//                SetDlgItemText(IDC_FOCAL_LENGTH_X_EDIT, valueString);
-	//                valueString.Format(_T("%0.5f"), CV_MAT_ELEM(m_CameraMatrix, double, 1,1));
-	//                SetDlgItemText(IDC_FOCAL_LENGTH_Y_EDIT, valueString);
-	//                valueString.Format(_T("%0.5f"), CV_MAT_ELEM(m_CameraMatrix, double, 0,2));
-	//                SetDlgItemText(IDC_OPTICAL_CENTER_X_EDIT, valueString);
-	//                valueString.Format(_T("%0.5f"), CV_MAT_ELEM(m_CameraMatrix, double, 1,2));
-	//                SetDlgItemText(IDC_OPTICAL_CENTER_Y_EDIT, valueString);
-
-	//                // Here we get the lens distortion coefficients (Notice: they are packed as: k1,k2,p1,p2,k3)
-	//                valueString.Format(_T("%0.5f"), CV_MAT_ELEM(m_DistCoeffsMatrix, double, 0,0));
-	//                SetDlgItemText(IDC_K1_EDIT, valueString);
-	//                valueString.Format(_T("%0.5f"), CV_MAT_ELEM(m_DistCoeffsMatrix, double, 0,1));
-	//                SetDlgItemText(IDC_K2_EDIT, valueString);
-	//                valueString.Format(_T("%0.5f"), CV_MAT_ELEM(m_DistCoeffsMatrix, double, 0,2));
-	//                SetDlgItemText(IDC_P1_EDIT, valueString);
-	//                valueString.Format(_T("%0.5f"), CV_MAT_ELEM(m_DistCoeffsMatrix, double, 0,3));
-	//                SetDlgItemText(IDC_P2_EDIT, valueString);
-	//                valueString.Format(_T("%0.5f"), CV_MAT_ELEM(m_DistCoeffsMatrix, double, 0,4));
-	//                SetDlgItemText(IDC_K3_EDIT, valueString);
-
-	//                // Prepare for the Undistort
-	//                cvInitUndistortMap(&m_CameraMatrix, &m_DistCoeffsMatrix, m_pUndistortMapX, m_pUndistortMapY);
-	//            }
-	//        }
-
-	//        // Blink the image so we signal that we successfully took a picture
-	//        cvNot(m_pImg, m_pImg);
-	//        m_CaptureDelay = 0;
-	//    }
-	//}
-
-	//EnterCriticalSection(&m_CriticalSection);
-	//if (m_bCalibrated && m_bSaveSettings)
-	//{
-	//    // save camera parameters in any case, to catch Inf's/NaN's
-	//    SaveCameraParams( "Settings.yml", 
-	//        m_ImageCount, 
-	//        m_ImgSize, 
-	//        m_BoardSize, 
-	//        m_SquareSize, 
-	//        m_AspectRatio, 
-	//        m_Flags, 
-	//        &m_CameraMatrix, 
-	//        &m_DistCoeffsMatrix, 
-	//        m_pExtrParamsMatrix,
-	//        m_pImagePointsSeq, 
-	//        m_pReprojErrsMatrix, 
-	//        m_AvgReprojRrr);
-	//    m_bSaveSettings = false;
-	//    m_bSettingsSaved = true;
-	//}
-	//LeaveCriticalSection(&m_CriticalSection);
-
-	// Display the original image in the "Source" window
-	//    if (!m_bCalibrated)
-	
-	//cvShowImage("Source", m_pImg);
-
-
-
-	//if (m_bCalibrated)
-	//{
-	//    IplImage* t0 = cvCloneImage( m_pImg );
-	//    cvRemap(t0, m_pImg, m_pUndistortMapX, m_pUndistortMapY);
-
-	//    // Display the result
-	//    cvShowImage("Output", m_pImg);
-
-	//    EnterCriticalSection(&m_CriticalSection);
-	//    if (m_bSaveImages)
-	//    {
-	//        cvSaveImage("SourceImage.tif", t0);
-	//        cvSaveImage("OutputImage.tif", m_pImg);
-	//        m_bSaveImages = false;
-	//        m_bImagesSaved = true;
-	//    }
-	//    LeaveCriticalSection(&m_CriticalSection);
-	//    cvReleaseImage( &t0 );
-	//}
 
 }
 //--------------------------------------------------------------------------------------------------
@@ -714,11 +560,6 @@ void COpenCVCameraCalibrationSampleDlg::EnableControls()
 	GetDlgItem(IDC_HEIGHT)->EnableWindow(m_bCameraOpen ? (m_bAcquisitionRunning ? FALSE : TRUE) : FALSE);
 	GetDlgItem(IDC_SLIDER_GAIN)->EnableWindow(m_bCameraOpen ? TRUE : FALSE);
 	GetDlgItem(IDC_GAIN)->EnableWindow(m_bCameraOpen ? TRUE : FALSE);
-//	GetDlgItem(IDC_SAVE_IMAGE_BUTTON)->EnableWindow(m_bCalibrated ? TRUE : FALSE);
-//	GetDlgItem(IDC_SAVE_SETTINGS_BUTTON)->EnableWindow(m_bCalibrated ? TRUE : FALSE);
-//	GetDlgItem(IDC_CHESS_ROWS_SPIN)->EnableWindow(m_bAcquisitionRunning ? FALSE : TRUE);
-//	GetDlgItem(IDC_CHESS_COLS_SPIN)->EnableWindow(m_bAcquisitionRunning ? FALSE : TRUE);
-//	GetDlgItem(IDC_IMAGE_COUNT_SPIN)->EnableWindow(m_bAcquisitionRunning ? FALSE : TRUE);
 }
 
 //--------------------------------------------------------------------------------------------------
